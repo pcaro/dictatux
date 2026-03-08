@@ -13,11 +13,12 @@ from __future__ import annotations
 import logging
 import os
 import urllib.error
+import warnings
 from pathlib import Path
 from typing import Dict, List, Optional, Tuple, Callable
 
-from PyQt6.QtCore import QDir, Qt
-from PyQt6.QtWidgets import (
+from PySide6.QtCore import QDir, Qt
+from PySide6.QtWidgets import (
     QDialog,
     QKeySequenceEdit,
     QLabel,
@@ -65,6 +66,8 @@ class AdvancedUI(QDialog):
         self._reset_context_callback = reset_context_callback
         self.engine_tabs: Dict[str, QWidget] = {}
         self.engine_settings_classes: Dict[str, type] = {}
+        self._shortcut_rows: List[tuple[QLabel, str, str, QPushButton]] = []
+        self._refresh_devices_button: Optional[QPushButton] = None
         self._add_shortcuts_config()
         self._populate_audio_devices()
 
@@ -94,7 +97,7 @@ class AdvancedUI(QDialog):
         lang = self.ui.interface_language_cb.itemData(index)
         if lang:
             from dictatux.dictatux import load_translations
-            from PyQt6.QtWidgets import QApplication
+            from PySide6.QtWidgets import QApplication
 
             load_translations(QApplication.instance(), lang)
             self.retranslateUi()
@@ -120,6 +123,9 @@ class AdvancedUI(QDialog):
             # Retranslate static UI from generated class
             self.ui.retranslateUi(self)
 
+            # Rebuild dynamic engine tabs so labels/tooltips use new translator
+            self._rebuild_engine_tabs_for_translation()
+
             # Re-populate engine dropdown (it was cleared or messed up by retranslateUi)
             self._populate_engine_dropdown()
 
@@ -137,80 +143,133 @@ class AdvancedUI(QDialog):
 
             # Re-apply info icons since layout/texts might have been reset
             self._add_info_icons_to_general_tab()
+            self._retranslate_dynamic_general_widgets()
 
-            # Update tab texts
-            for engine_id, tab in self.engine_tabs.items():
-                idx = self.ui.tabWidget.indexOf(tab)
-                if idx >= 0:
-                    display_name = get_engine_display_name(engine_id)
-                    self.ui.tabWidget.setTabText(idx, display_name)
+            # Ensure tab enabled state follows selected engine
+            index = self.ui.stt_engine_cb.currentIndex()
+            if index >= 0:
+                self._on_stt_engine_changed(index)
         finally:
             self.ui.stt_engine_cb.blockSignals(False)
             self.ui.interface_language_cb.blockSignals(False)
 
     def _add_info_icons_to_general_tab(self) -> None:
         """Add info icons to labels in the General tab that have tooltips."""
-        layout = self.ui.general_grid_layout
+        self._ensure_info_icons_in_layout(self.ui.general_grid_layout)
+        self._ensure_label_has_info_icon(
+            self.ui.label_stt_engine,
+            self.ui.gridLayout_8,
+            row=0,
+            col=0,
+        )
 
-        # Iterate through all widgets in the general grid layout
+    def _ensure_info_icons_in_layout(self, layout) -> None:
+        """Ensure labels with tooltips have one info icon container."""
         for i in range(layout.rowCount()):
             item = layout.itemAtPosition(i, 0)
             if not item:
                 continue
 
             widget = item.widget()
-            if isinstance(widget, QLabel) and widget.toolTip():
-                tooltip_text = widget.toolTip()
-                # Clear original tooltip from label to avoid double tooltip
-                widget.setToolTip("")
+            if widget is None:
+                continue
 
-                # Create container for label + icon
-                container = QWidget()
-                h_layout = QHBoxLayout(container)
-                h_layout.setContentsMargins(0, 0, 0, 0)
-                h_layout.setSpacing(4)
+            if isinstance(widget, QLabel):
+                self._ensure_label_has_info_icon(widget, layout, i, 0)
+                continue
 
-                # Move label to container (widget is the existing label)
-                # We need to remove it from the grid first
-                layout.removeWidget(widget)
+            if isinstance(widget, QWidget) and getattr(
+                widget, "_dictatux_info_container", False
+            ):
+                label = getattr(widget, "_dictatux_info_label", None)
+                icon = getattr(widget, "_dictatux_info_icon", None)
+                if isinstance(label, QLabel) and isinstance(icon, QLabel):
+                    tooltip_text = label.toolTip()
+                    if tooltip_text:
+                        icon.setToolTip(format_tooltip(tooltip_text))
+                        label.setToolTip("")
 
-                info_icon = QLabel("ⓘ")
-                info_icon.setStyleSheet("color: #3498db; font-weight: bold;")
-                info_icon.setToolTip(format_tooltip(tooltip_text))
+    def _ensure_label_has_info_icon(
+        self, label: QLabel, layout, row: int, col: int
+    ) -> None:
+        """Wrap label with tooltip in a reusable label+info icon container."""
+        tooltip_text = label.toolTip()
+        if not tooltip_text:
+            return
 
-                h_layout.addWidget(widget)
-                h_layout.addWidget(info_icon)
-                h_layout.addStretch()
+        current_item = layout.itemAtPosition(row, col)
+        current_widget = current_item.widget() if current_item else None
 
-                # Add container back to the grid in the same position
-                layout.addWidget(container, i, 0)
+        if isinstance(current_widget, QWidget) and getattr(
+            current_widget, "_dictatux_info_container", False
+        ):
+            icon = getattr(current_widget, "_dictatux_info_icon", None)
+            if isinstance(icon, QLabel):
+                icon.setToolTip(format_tooltip(tooltip_text))
+                label.setToolTip("")
+            return
 
-        # Also check the STT Engine label specifically (it's in gridLayout_8)
-        stt_label = self.ui.label_stt_engine
-        if stt_label and stt_label.toolTip():
-            tooltip_text = stt_label.toolTip()
-            stt_label.setToolTip("")
+        container = QWidget()
+        container._dictatux_info_container = True  # type: ignore[attr-defined]
+        h_layout = QHBoxLayout(container)
+        h_layout.setContentsMargins(0, 0, 0, 0)
+        h_layout.setSpacing(4)
 
-            container = QWidget()
-            h_layout = QHBoxLayout(container)
-            h_layout.setContentsMargins(0, 0, 0, 0)
-            h_layout.setSpacing(4)
+        layout.removeWidget(label)
 
-            self.ui.gridLayout_8.removeWidget(stt_label)
+        info_icon = QLabel("ⓘ")
+        info_icon.setStyleSheet("color: #3498db; font-weight: bold;")
+        info_icon.setToolTip(format_tooltip(tooltip_text))
 
-            info_icon = QLabel("ⓘ")
-            info_icon.setStyleSheet("color: #3498db; font-weight: bold;")
-            info_icon.setToolTip(format_tooltip(tooltip_text))
+        container._dictatux_info_label = label  # type: ignore[attr-defined]
+        container._dictatux_info_icon = info_icon  # type: ignore[attr-defined]
 
-            h_layout.addWidget(stt_label)
-            h_layout.addWidget(info_icon)
-            h_layout.addStretch()
+        h_layout.addWidget(label)
+        h_layout.addWidget(info_icon)
+        h_layout.addStretch()
+        layout.addWidget(container, row, col)
+        label.setToolTip("")
 
-            self.ui.gridLayout_8.addWidget(container, 0, 0)
+    def _capture_engine_tab_values(self) -> Dict[str, object]:
+        """Capture current engine dataclass values to preserve edits on retranslate."""
+        captured: Dict[str, object] = {}
+        for engine_id in list(self.engine_tabs.keys()):
+            settings_obj = self.get_engine_settings_dataclass(engine_id)
+            if settings_obj is not None:
+                captured[engine_id] = settings_obj
+        return captured
 
-    def _generate_engine_tabs(self) -> None:
+    def _rebuild_engine_tabs_for_translation(self) -> None:
+        """Rebuild dynamic tabs so labels/tooltips are translated with current locale."""
+        captured_values = self._capture_engine_tab_values()
+        for tab in list(self.engine_tabs.values()):
+            idx = self.ui.tabWidget.indexOf(tab)
+            if idx >= 0:
+                self.ui.tabWidget.removeTab(idx)
+            tab.deleteLater()
+
+        self.engine_tabs = {}
+        self.engine_settings_classes = {}
+        self._generate_engine_tabs(instances=captured_values)
+
+    def _retranslate_dynamic_general_widgets(self) -> None:
+        """Retranslate labels/tooltips for widgets added programmatically."""
+        for label, label_text, tooltip_text, clear_button in self._shortcut_rows:
+            label.setText(self.tr(label_text))
+            label.setToolTip(self.tr(tooltip_text))
+            clear_button.setToolTip(self.tr("Clear shortcut"))
+
+        if self._refresh_devices_button is not None:
+            self._refresh_devices_button.setToolTip(
+                self.tr("Refresh audio device list")
+            )
+
+    def _generate_engine_tabs(
+        self, instances: Optional[Dict[str, object]] = None
+    ) -> None:
         """Generate tabs dynamically for all registered engines."""
         self.engine_tabs = {}
+        instances = instances or {}
 
         for engine_id in get_all_engine_ids():
             settings_class = get_engine_settings_class(engine_id)
@@ -221,8 +280,8 @@ class AdvancedUI(QDialog):
                 continue
 
             # Generate tab from settings metadata
-            instance = None
-            if self._settings_ref is not None:
+            instance = instances.get(engine_id)
+            if instance is None and self._settings_ref is not None:
                 try:
                     instance = self._settings_ref.get_engine_settings(engine_id)
                 except Exception as exc:  # pragma: no cover - defensive
@@ -243,23 +302,29 @@ class AdvancedUI(QDialog):
             self.engine_tabs[engine_id] = tab_widget
             self.engine_settings_classes[engine_id] = settings_class
 
-            if engine_id == "vosk-local":
-                button = tab_widget.widgets_map.get("manage_models_action")
-                if isinstance(button, QPushButton):
-                    try:
-                        button.clicked.disconnect()
-                    except (TypeError, RuntimeError):
-                        pass
-                    button.clicked.connect(
-                        lambda _checked=False, tab=tab_widget: (
-                            self._handle_model_selection(tab)
-                        )
-                    )
+            self._wire_engine_tab_actions(engine_id, tab_widget)
 
-            if engine_id == "whisper-local":
-                button = tab_widget.widgets_map.get("reset_context_action")
-                if isinstance(button, QPushButton) and self._reset_context_callback:
-                    button.clicked.connect(self._reset_context_callback)
+    def _wire_engine_tab_actions(self, engine_id: str, tab_widget: QWidget) -> None:
+        """Attach callbacks for engine-specific action buttons."""
+        if engine_id == "vosk-local":
+            button = tab_widget.widgets_map.get("manage_models_action")
+            if isinstance(button, QPushButton):
+                try:
+                    with warnings.catch_warnings():
+                        warnings.simplefilter("ignore", RuntimeWarning)
+                        button.clicked.disconnect()
+                except (TypeError, RuntimeError):
+                    pass
+                button.clicked.connect(
+                    lambda _checked=False, tab=tab_widget: self._handle_model_selection(
+                        tab
+                    )
+                )
+
+        if engine_id == "whisper-local":
+            button = tab_widget.widgets_map.get("reset_context_action")
+            if isinstance(button, QPushButton) and self._reset_context_callback:
+                button.clicked.connect(self._reset_context_callback)
 
     def _populate_engine_dropdown(self) -> None:
         """Populate the engine dropdown with all registered engines."""
@@ -335,12 +400,13 @@ class AdvancedUI(QDialog):
 
             clear_button = QPushButton("✕")
             clear_button.setMaximumWidth(30)
-            clear_button.setToolTip("Clear shortcut")
+            clear_button.setToolTip(self.tr("Clear shortcut"))
             clear_button.clicked.connect(shortcut_edit.clear)
 
             layout.addWidget(label, row, 0)
             layout.addWidget(shortcut_edit, row, 1)
             layout.addWidget(clear_button, row, 2)
+            self._shortcut_rows.append((label, label_text, tooltip, clear_button))
             return shortcut_edit
 
         self.beginShortcut = add_shortcut_row(
@@ -378,17 +444,15 @@ class AdvancedUI(QDialog):
         # Get the layout where deviceName is located
         layout = self.ui.general_grid_layout
 
-        # Find the deviceName combobox row
-        device_combo = self.ui.deviceName
-
         # Populate initial devices
         self._refresh_audio_devices()
 
         # Create refresh button
         refresh_button = QPushButton("🔄")
         refresh_button.setMaximumWidth(40)
-        refresh_button.setToolTip("Refresh audio device list")
+        refresh_button.setToolTip(self.tr("Refresh audio device list"))
         refresh_button.clicked.connect(self._refresh_audio_devices)
+        self._refresh_devices_button = refresh_button
 
         # Add refresh button next to the combobox (row 3, column 2)
         layout.addWidget(refresh_button, 3, 2, 1, 1)
@@ -432,30 +496,33 @@ class AdvancedUI(QDialog):
         Returns:
             True if user wants to save anyway, False to go back and fix
         """
-        from PyQt6.QtWidgets import QMessageBox
+        from PySide6.QtWidgets import QMessageBox
 
         warning_lines = []
 
         if general_warnings:
-            warning_lines.append("**General Settings:**")
-            for field, message in general_warnings.items():
-                warning_lines.append(f"  • {message}")
+            warning_lines.append(self.tr("General Settings:"))
+            for message in general_warnings.values():
+                warning_lines.append(f"  - {message}")
 
         if engine_warnings:
             engine_name = get_engine_display_name(engine_id)
-            warning_lines.append(f"\n**{engine_name}:**")
-            for field, message in engine_warnings.items():
-                warning_lines.append(f"  • {message}")
+            warning_lines.append("")
+            warning_lines.append(f"{engine_name}:")
+            for message in engine_warnings.values():
+                warning_lines.append(f"  - {message}")
 
         message = (
-            "⚠️ The following warnings were found:\n\n"
+            self.tr("The following warnings were found:")
+            + "\n\n"
             + "\n".join(warning_lines)
-            + "\n\nDo you want to save anyway?"
+            + "\n\n"
+            + self.tr("Do you want to save anyway?")
         )
 
         reply = QMessageBox.warning(
             self,
-            "Validation Warnings",
+            self.tr("Validation Warnings"),
             message,
             QMessageBox.StandardButton.Save | QMessageBox.StandardButton.Cancel,
             QMessageBox.StandardButton.Cancel,

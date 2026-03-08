@@ -7,7 +7,7 @@ import os
 import pytest
 from dataclasses import dataclass, field
 from typing import List, Tuple
-from PyQt6.QtWidgets import QApplication, QComboBox, QPushButton, QHBoxLayout
+from PySide6.QtWidgets import QApplication, QComboBox, QPushButton, QHBoxLayout
 
 from dictatux.ui_generator import create_widget_from_field, generate_settings_tab
 import dataclasses

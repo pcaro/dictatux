@@ -23,7 +23,7 @@ Dictatux is a desktop application that provides a graphical interface for multip
 - **Pre/post commands**: Run custom commands before and after dictation
 
 ### ⌨️ Global Keyboard Shortcuts (KDE)
-With PyQt6-DBus installed on KDE, configure system-wide shortcuts for:
+With PySide6-DBus installed on KDE, configure system-wide shortcuts for:
 - Begin dictation
 - End dictation
 - Toggle dictation

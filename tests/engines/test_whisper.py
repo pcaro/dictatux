@@ -187,7 +187,7 @@ def test_get_available_engines():
 
 def test_settings_stt_engine_defaults():
     from dictatux.settings import Settings
-    from PyQt6.QtCore import QSettings
+    from PySide6.QtCore import QSettings
 
     # Create temporary settings
     backend = QSettings("TestOrg", "TestApp")

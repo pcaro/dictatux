@@ -4,18 +4,16 @@ import os
 from typing import Callable, List, Optional, Sequence, Tuple
 
 import pytest
-from PyQt6.QtCore import QSettings
-from PyQt6.QtGui import QIcon
-from PyQt6.QtTest import QTest
-from PyQt6.QtWidgets import QApplication
+from PySide6.QtCore import QSettings
+from PySide6.QtGui import QIcon
+from PySide6.QtTest import QTest
+from PySide6.QtWidgets import QApplication
 
 from dictatux.settings import Settings
 from dictatux.stt_engine import STTController, STTProcessRunner
 from dictatux.status import DictationStatus
 from dictatux.tray_icon import SystemTrayIcon
 from tests.helpers import FakeController, FakeIPC, FakeRunner
-
-
 
 
 @pytest.fixture(scope="module")
@@ -41,17 +39,21 @@ def fake_engine(monkeypatch) -> List[Tuple[FakeController, FakeRunner]]:
     return created
 
 
-def _create_tray(fake_engine) -> SystemTrayIcon:
+@pytest.fixture
+def tray(fake_engine, qt_app):
+    """Create a SystemTrayIcon with cleanup."""
     ipc = FakeIPC()
     icon = QIcon()
     tray = SystemTrayIcon(icon, False, ipc, temporary_engine="fake-engine")
     tray.settings.sttEngine = "fake-engine"
     tray.settings.models = [{"name": "fake", "location": "/tmp/fake-model"}]
-    return tray
+    yield tray
+    # Cleanup: cancel any pending timers
+    tray._engine_manager._cancel_retry_timer()
+    tray._engine_manager._cancel_refresh_timeout()
 
 
-def test_full_engine_workflow(fake_engine, qt_app):
-    tray = _create_tray(fake_engine)
+def test_full_engine_workflow(tray, fake_engine, qt_app):
     controller, runner = fake_engine[-1]
 
     tray.begin()
@@ -74,7 +76,12 @@ def test_full_engine_workflow(fake_engine, qt_app):
 
 
 def test_settings_persistence_roundtrip(qt_app):
-    backend = QSettings(QSettings.Format.IniFormat, QSettings.Scope.UserScope, "DictatuxIntegration", "PersistenceTest")
+    backend = QSettings(
+        QSettings.Format.IniFormat,
+        QSettings.Scope.UserScope,
+        "DictatuxIntegration",
+        "PersistenceTest",
+    )
     backend.clear()
 
     settings = Settings(backend)
@@ -84,28 +91,35 @@ def test_settings_persistence_roundtrip(qt_app):
     settings.add_model("es", "fake-model", "1.0", "1GB", "vosk", "/tmp/fake-model")
     settings.save()
 
-    reload_backend = QSettings(QSettings.Format.IniFormat, QSettings.Scope.UserScope, "DictatuxIntegration", "PersistenceTest")
+    reload_backend = QSettings(
+        QSettings.Format.IniFormat,
+        QSettings.Scope.UserScope,
+        "DictatuxIntegration",
+        "PersistenceTest",
+    )
     reloaded = Settings(reload_backend)
     reloaded.load()
 
     assert reloaded.sttEngine == "openai-realtime"
     assert reloaded.openaiLanguage == "es"
     assert reloaded.deviceName == "test-device"
-    assert reloaded.models == [{
-        "name": "fake-model",
-        "language": "es",
-        "version": "1.0",
-        "size": "1GB",
-        "type": "vosk",
-        "location": "/tmp/fake-model",
-    }]
+    assert reloaded.models == [
+        {
+            "name": "fake-model",
+            "language": "es",
+            "version": "1.0",
+            "size": "1GB",
+            "type": "vosk",
+            "location": "/tmp/fake-model",
+        }
+    ]
 
     reload_backend.clear()
 
 
-def test_error_recovery_triggers_retry(fake_engine, qt_app):
-    tray = _create_tray(fake_engine)
+def test_error_recovery_triggers_retry(tray, fake_engine, qt_app):
     tray._engine_manager._retry_delay_ms = 1
+    tray._engine_manager._max_retries = 3  # Limit retries for faster test
 
     initial_controller, initial_runner = fake_engine[-1]
 
@@ -113,12 +127,11 @@ def test_error_recovery_triggers_retry(fake_engine, qt_app):
     assert initial_runner.is_running() is True
 
     initial_runner.fail()
+    qt_app.processEvents()
     assert tray.dictating is False
     assert initial_controller.exit_codes[-1] == 1
 
-    QTest.qWait(10)
-    qt_app.processEvents()
-    QTest.qWait(10)
+    QTest.qWait(50)
     qt_app.processEvents()
 
     assert len(fake_engine) >= 2

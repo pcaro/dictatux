@@ -8,7 +8,7 @@ from datetime import datetime, timedelta
 from enum import Enum
 from typing import Any, Callable, Dict, List, Optional, Tuple
 
-from PyQt6.QtCore import QTimer
+from PySide6.QtCore import QObject, Qt, QTimer, Signal, Slot
 
 from dictatux.settings import Settings
 from dictatux.stt_engine import STTController, STTProcessRunner
@@ -72,8 +72,14 @@ FALLBACK_CHAIN = _build_fallback_chain()
 _CIRCUIT_OPEN_SECONDS = 15
 
 
-class EngineManager:
+class EngineManager(QObject):
     """Manages STT engine lifecycle and configuration."""
+
+    # NOTE: Worker threads may emit these signals; queued connections ensure
+    # callbacks execute on the Qt main thread where UI updates are safe.
+    state_changed = Signal(object, int)  # (DictationStatus, generation)
+    output_received = Signal(str, int)  # (line, generation)
+    engine_exited = Signal(int, int)  # (return_code, generation)
 
     def __init__(
         self,
@@ -92,14 +98,17 @@ class EngineManager:
             max_retries: Maximum number of retry attempts on failure
             retry_delay_ms: Base delay between retries in milliseconds
         """
+        super().__init__()
+
         self._settings = settings
         self._cli_override = temporary_engine is not None
         self._user_engine = normalize_engine_name(settings.sttEngine)
+        dynamic_fallbacks = _build_fallback_chain()
         self._fallback_chain = [
             self._user_engine,
             *[
                 engine
-                for engine in FALLBACK_CHAIN.get(self._user_engine, [])
+                for engine in dynamic_fallbacks.get(self._user_engine, [])
                 if engine != self._user_engine
             ],
         ]
@@ -111,6 +120,10 @@ class EngineManager:
 
         self._controller: Optional[STTController] = None
         self._runner: Optional[STTProcessRunner] = None
+        self._engine_generation = 0
+        self._state_listener_ref: Optional[Callable[[object], None]] = None
+        self._output_listener_ref: Optional[Callable[[str], None]] = None
+        self._exit_listener_ref: Optional[Callable[[int], None]] = None
         self._failure_count = 0
         self._retry_scheduled = False
         self._pending_refresh = False
@@ -129,9 +142,39 @@ class EngineManager:
         self.on_exit: Optional[Callable[[int], None]] = None
         self.on_refresh_complete: Optional[Callable[[], None]] = None
 
-    def _handle_internal_state_change(self, internal_state: object) -> None:
-        if self.on_state_change and self._controller:
-            self.on_state_change(self._controller.dictation_status)
+        self.state_changed.connect(
+            self._dispatch_state_change,
+            Qt.ConnectionType.QueuedConnection,
+        )
+        self.output_received.connect(
+            self._dispatch_output,
+            Qt.ConnectionType.QueuedConnection,
+        )
+        self.engine_exited.connect(
+            self._dispatch_exit,
+            Qt.ConnectionType.QueuedConnection,
+        )
+
+    @Slot(object, int)
+    def _dispatch_state_change(self, status: DictationStatus, generation: int) -> None:
+        if generation != self._engine_generation:
+            return
+        if self.on_state_change:
+            self.on_state_change(status)
+
+    @Slot(str, int)
+    def _dispatch_output(self, line: str, generation: int) -> None:
+        if generation != self._engine_generation:
+            return
+        if self.on_output:
+            self.on_output(line)
+
+    @Slot(int, int)
+    def _dispatch_exit(self, return_code: int, generation: int) -> None:
+        if generation != self._engine_generation:
+            return
+        if self.on_exit:
+            self.on_exit(return_code)
 
     @property
     def controller(self) -> Optional[STTController]:
@@ -160,10 +203,13 @@ class EngineManager:
             ValueError: If engine type is not supported
             RuntimeError: If engine creation fails
         """
-        # Unregister callbacks from old controller to prevent race condition
-        # where old controller's exit handler fires after new engine is created
-        if self._controller and self.on_exit:
-            self._controller.remove_exit_listener(self.on_exit)
+        # Unregister callback from old controller to prevent race condition
+        # where old controller's exit handler fires after new engine is created.
+        if self._controller and self._exit_listener_ref:
+            self._controller.remove_exit_listener(self._exit_listener_ref)
+        self._state_listener_ref = None
+        self._output_listener_ref = None
+        self._exit_listener_ref = None
 
         engine_type = self.active_engine_type
         engine_settings = self._settings.get_engine_settings(engine_type)
@@ -172,13 +218,25 @@ class EngineManager:
 
         controller, runner = create_stt_engine(engine_type, settings=engine_settings)
 
-        # Register callbacks if set
-        if self.on_state_change:
-            controller.add_state_listener(self._handle_internal_state_change)
-        if self.on_output:
-            controller.add_output_listener(self.on_output)
-        if self.on_exit:
-            controller.add_exit_listener(self.on_exit)
+        self._engine_generation += 1
+        generation = self._engine_generation
+
+        def on_state_change(_internal_state: object) -> None:
+            self.state_changed.emit(controller.dictation_status, generation)
+
+        def on_output(line: str) -> None:
+            self.output_received.emit(line, generation)
+
+        def on_exit(return_code: int) -> None:
+            self.engine_exited.emit(return_code, generation)
+
+        self._state_listener_ref = on_state_change
+        self._output_listener_ref = on_output
+        self._exit_listener_ref = on_exit
+
+        controller.add_state_listener(on_state_change)
+        controller.add_output_listener(on_output)
+        controller.add_exit_listener(on_exit)
 
         self._controller = controller
         self._runner = runner

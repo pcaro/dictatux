@@ -5,7 +5,7 @@ from __future__ import annotations
 
 import os
 import pytest
-from PyQt6.QtWidgets import QApplication
+from PySide6.QtWidgets import QApplication
 
 
 @pytest.fixture(scope="module")
@@ -118,9 +118,57 @@ def test_advanced_dialog_populates_settings_instance(qt_app):
     assert updated.api_key == "new-key"
 
 
+def test_retranslate_preserves_dynamic_tab_values_and_no_info_icon_duplication(qt_app):
+    """Retranslate should keep edited values and avoid duplicating info icon containers."""
+    import dataclasses
+    from dictatux.dialogs import AdvancedUI
+    from dictatux.engine_plugin import get_all_engine_ids, get_engine_settings_class
+
+    class DummySettings:
+        def __init__(self):
+            self._cache = {
+                engine_id: get_engine_settings_class(engine_id)()
+                for engine_id in get_all_engine_ids()
+            }
+
+        def get_engine_settings(self, engine_type: str):
+            cls = get_engine_settings_class(engine_type)
+            instance = self._cache.get(engine_type, cls())
+            return dataclasses.replace(instance)
+
+    dialog = AdvancedUI(DummySettings())
+
+    openai_tab = dialog.engine_tabs["openai-realtime"]
+    api_widget = openai_tab.widgets_map["api_key"]
+    api_widget.setText("persist-me")
+
+    def count_info_containers():
+        layout = dialog.ui.general_grid_layout
+        count = 0
+        for i in range(layout.rowCount()):
+            item = layout.itemAtPosition(i, 0)
+            if not item:
+                continue
+            widget = item.widget()
+            if widget is not None and getattr(widget, "_dictatux_info_container", False):
+                count += 1
+        return count
+
+    before = count_info_containers()
+    dialog.retranslateUi()
+    after_first = count_info_containers()
+    dialog.retranslateUi()
+    after_second = count_info_containers()
+
+    updated = dialog.get_engine_settings_dataclass("openai-realtime")
+    assert updated.api_key == "persist-me"
+    assert after_first == after_second
+    assert after_first >= before
+
+
 def test_manage_models_action_updates_path(qt_app, monkeypatch, tmp_path):
     """Clicking manage models should refresh the model path field."""
-    from PyQt6.QtCore import QSettings
+    from PySide6.QtCore import QSettings
     from dictatux.dialogs import AdvancedUI
     from dictatux.settings import Settings
 
@@ -160,7 +208,7 @@ def test_manage_models_action_updates_path(qt_app, monkeypatch, tmp_path):
 
 def test_custom_ui_edit_persists_changes(qt_app, tmp_path):
     """Editing an existing model should persist updated metadata."""
-    from PyQt6.QtCore import QSettings
+    from PySide6.QtCore import QSettings
     from dictatux.settings import Settings
     from dictatux.model_ui.dialogs import CustomUI
 

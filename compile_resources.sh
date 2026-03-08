@@ -2,6 +2,10 @@
 # Compila recursos Qt usando Docker (sin instalar nada en el sistema)
 # Uso: ./compile_resources.sh [archivo.qrc] [salida.py]
 
+set -e
+
+IMAGE_NAME="dictatux-dev-tools"
+
 QRC_FILE="${1:-dictatux/dictatux.qrc}"
 OUTPUT_FILE="${2:-dictatux/dictatux_rc.py}"
 
@@ -14,15 +18,19 @@ if ! command -v docker &> /dev/null; then
     exit 1
 fi
 
+# Verificar si la imagen existe, si no, construirla
+if ! docker image inspect "$IMAGE_NAME" > /dev/null 2>&1; then
+    echo "Imagen '$IMAGE_NAME' no encontrada. Construyendo..."
+    docker build -t "$IMAGE_NAME" -f Dockerfile.dev-tools .
+    echo "✓ Imagen construida exitosamente"
+fi
+
 # Ejecutar con Docker
 docker run --rm \
     -v "$(pwd):/workspace" \
     -w /workspace \
-    ubuntu:22.04 bash -c "
-        apt-get update -qq && \
-        apt-get install -y -qq python3-pyqt6-dev-tools > /dev/null 2>&1 && \
-        pyrcc6 '$QRC_FILE' -o '$OUTPUT_FILE'
-    "
+    "$IMAGE_NAME" \
+    pyrcc6 "$QRC_FILE" -o "$OUTPUT_FILE"
 
 if [ $? -eq 0 ]; then
     echo "✓ Archivo compilado exitosamente: $OUTPUT_FILE"

@@ -2,7 +2,7 @@
 # ABOUTME: Verifies shortcut string parsing to Qt key codes and signal handling
 
 import pytest
-from PyQt6.QtCore import Qt
+from PySide6.QtCore import Qt
 from dictatux.ipc_dbus import IPCDBus
 
 
@@ -113,12 +113,12 @@ def test_parse_whitespace_handling(ipc_dbus):
 
 def test_modifier_map_contains_expected_keys(ipc_dbus):
     """Test that MODIFIER_MAP has expected entries"""
-    assert 'ctrl' in IPCDBus.MODIFIER_MAP
-    assert 'control' in IPCDBus.MODIFIER_MAP
-    assert 'alt' in IPCDBus.MODIFIER_MAP
-    assert 'shift' in IPCDBus.MODIFIER_MAP
-    assert 'meta' in IPCDBus.MODIFIER_MAP
-    assert 'super' in IPCDBus.MODIFIER_MAP
+    assert "ctrl" in IPCDBus.MODIFIER_MAP
+    assert "control" in IPCDBus.MODIFIER_MAP
+    assert "alt" in IPCDBus.MODIFIER_MAP
+    assert "shift" in IPCDBus.MODIFIER_MAP
+    assert "meta" in IPCDBus.MODIFIER_MAP
+    assert "super" in IPCDBus.MODIFIER_MAP
 
 
 def test_supports_global_shortcuts_caching(ipc_dbus):
@@ -141,10 +141,11 @@ def test_signal_handler_signature(ipc_dbus):
     assert callable(handler)
 
     # The handler should accept component (str), unique_name (str), timestamp (int/qlonglong)
-    # We can't easily test the pyqtSlot decorator signature, but we can verify the method signature
+    # We can't easily test the Slot decorator signature, but we can verify the method signature
     import inspect
+
     sig = inspect.signature(handler)
     params = list(sig.parameters.keys())
-    assert 'component' in params
-    assert 'unique_name' in params
-    assert 'timestamp' in params
+    assert "component" in params
+    assert "unique_name" in params
+    assert "timestamp" in params

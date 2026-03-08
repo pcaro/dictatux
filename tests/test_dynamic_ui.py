@@ -6,7 +6,7 @@ from __future__ import annotations
 import os
 import dataclasses
 import pytest
-from PyQt6.QtWidgets import QApplication, QLineEdit, QCheckBox, QComboBox, QSlider, QPushButton
+from PySide6.QtWidgets import QApplication, QLineEdit, QCheckBox, QComboBox, QSlider, QPushButton
 
 
 @pytest.fixture(scope="module")
@@ -45,7 +45,7 @@ def test_create_password_widget_from_metadata(qt_app):
     """Test creating a password input widget from field metadata."""
     from dictatux.ui_generator import create_widget_from_field
     from dataclasses import dataclass, field
-    from PyQt6.QtWidgets import QLineEdit
+    from PySide6.QtWidgets import QLineEdit
 
     @dataclass
     class TestSettings:

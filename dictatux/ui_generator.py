@@ -1,5 +1,5 @@
 # ABOUTME: Dynamic UI generation from dataclass field metadata.
-# ABOUTME: Creates PyQt6 widgets based on field annotations for settings dialogs.
+# ABOUTME: Creates PySide6 widgets based on field annotations for settings dialogs.
 
 from __future__ import annotations
 
@@ -8,7 +8,7 @@ import importlib
 import typing
 from typing import Any, Callable, List, Tuple, Type, get_type_hints
 from dataclasses import Field
-from PyQt6.QtWidgets import (
+from PySide6.QtWidgets import (
     QWidget,
     QLineEdit,
     QCheckBox,
@@ -20,7 +20,7 @@ from PyQt6.QtWidgets import (
     QHBoxLayout,
     QVBoxLayout,
 )
-from PyQt6.QtCore import Qt, QCoreApplication
+from PySide6.QtCore import Qt, QCoreApplication
 
 
 def format_tooltip(

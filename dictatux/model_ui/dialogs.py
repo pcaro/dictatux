@@ -11,9 +11,9 @@ from typing import TYPE_CHECKING, List, Optional, Tuple
 from zipfile import ZipFile
 from subprocess import Popen
 
-from PyQt6.QtCore import QCoreApplication, QDir, QSize, Qt, QTimer
-from PyQt6.QtGui import QIcon, QStandardItem, QStandardItemModel
-from PyQt6.QtWidgets import (
+from PySide6.QtCore import QCoreApplication, QDir, QSize, Qt, QTimer
+from PySide6.QtGui import QIcon, QStandardItem, QStandardItemModel
+from PySide6.QtWidgets import (
     QAbstractItemView,
     QDialog,
     QDialogButtonBox,
@@ -44,7 +44,7 @@ if TYPE_CHECKING:  # pragma: no cover
     from dictatux.settings import Settings
 
 if TYPE_CHECKING:  # pragma: no cover
-    from PyQt6.QtWidgets import QWidget
+    from PySide6.QtWidgets import QWidget
 
 
 class Models(QStandardItemModel):
@@ -138,11 +138,13 @@ class CustomUI(QDialog):
 class DownloadPopup(QDialog):
     """Dialog handling remote model downloads and registration."""
 
-    def __init__(self, settings: 'Settings', installed: List[str], parent=None) -> None:
+    def __init__(self, settings: "Settings", installed: List[str], parent=None) -> None:
         super().__init__(parent)
         self.settings = settings
         self.setWindowTitle("Dictatux")
-        self.setWindowIcon(get_icon("audio-input-microphone", ":/icons/dictatux/24/micro.png"))
+        self.setWindowIcon(
+            get_icon("audio-input-microphone", ":/icons/dictatux/24/micro.png")
+        )
         self.list = Models()
         raw_models = load_model_index()
         self.remote_models = filter_available_models(raw_models, installed)
@@ -208,10 +210,14 @@ class DownloadPopup(QDialog):
         rc, temp_file, name = self.import_model()
         if rc:
             while not MODEL_GLOBAL_PATH.exists():
-                process = Popen(["pkexec", "mkdir", "-p", "-m=777", str(MODEL_GLOBAL_PATH)])
+                process = Popen(
+                    ["pkexec", "mkdir", "-p", "-m=777", str(MODEL_GLOBAL_PATH)]
+                )
                 if process.wait() != 0:
                     retry = ConfirmDownloadUI(
-                        self.tr("The application failed to save the model. Do you want to retry?")
+                        self.tr(
+                            "The application failed to save the model. Do you want to retry?"
+                        )
                     )
                     if not retry.exec():
                         break
@@ -245,13 +251,20 @@ class DownloadPopup(QDialog):
         self.name = self.list.data(self.list.index(selection[0].row(), 1))
         size = self.list.data(self.list.index(selection[0].row(), 3))
         confirmation = ConfirmDownloadUI(
-            self.tr("We will download the model {} of {} from {}. Do you agree?").format(
-                self.name, size, MODELS_URL
-            )
+            self.tr(
+                "We will download the model {} of {} from {}. Do you agree?"
+            ).format(self.name, size, MODELS_URL)
         )
         if not confirmation.exec():
             return False, "", ""
-        url = next((model["url"] for model in self.remote_models if model["name"] == self.name), "")
+        url = next(
+            (
+                model["url"]
+                for model in self.remote_models
+                if model["name"] == self.name
+            ),
+            "",
+        )
         if not url:
             logging.warning("The model has no url provided")
             return False, "", ""
@@ -284,13 +297,16 @@ class ConfigPopup(QDialog):
 
     def __init__(self, current_model: str, parent=None) -> None:
         from dictatux.settings import Settings
+
         super().__init__(parent)
         self.settings = Settings()
         self.currentModel = current_model
         self.returnValue = None
 
         self.setWindowTitle(self.tr("Manage Models"))
-        self.setWindowIcon(get_icon("audio-input-microphone", ":/icons/dictatux/24/micro.png"))
+        self.setWindowIcon(
+            get_icon("audio-input-microphone", ":/icons/dictatux/24/micro.png")
+        )
         layout = QVBoxLayout(self)
         model_list_path()
         self.table = QTableView()

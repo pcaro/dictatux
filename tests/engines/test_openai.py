@@ -155,6 +155,33 @@ def test_runner_configuration():
     assert runner._vad_silence_duration_ms == 300
 
 
+def test_runner_accepts_latest_transcribe_alias():
+    """Latest model alias should be accepted and routed to realtime session model."""
+    controller = make_controller()
+    runner = OpenAIRealtimeProcessRunner(
+        controller,
+        api_key="sk-test-key",
+        model="gpt-4o-transcribe-latest",
+    )
+
+    assert runner._model == "gpt-4o-transcribe-latest"
+    assert runner._session_model == "gpt-4o-realtime-preview"
+    assert runner._resolve_transcription_model(runner._model) == "gpt-4o-transcribe"
+
+
+def test_runner_fallbacks_for_unsupported_model():
+    """Unsupported model names should fallback safely to stable default."""
+    controller = make_controller()
+    runner = OpenAIRealtimeProcessRunner(
+        controller,
+        api_key="sk-test-key",
+        model="not-a-real-model",
+    )
+
+    assert runner._model == "gpt-4o-transcribe"
+    assert runner._session_model == "gpt-4o-realtime-preview"
+
+
 def test_runner_is_not_running_initially():
     """Test runner is not running initially."""
     controller = make_controller()

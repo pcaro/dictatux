@@ -5,9 +5,9 @@ import os
 from subprocess import Popen
 from typing import Any, Dict, Optional, Tuple
 
-from PyQt6.QtCore import QCoreApplication, QTimer
-from PyQt6.QtGui import QIcon
-from PyQt6.QtWidgets import QApplication, QMenu, QSystemTrayIcon
+from PySide6.QtCore import QCoreApplication, QTimer
+from PySide6.QtGui import QIcon
+from PySide6.QtWidgets import QApplication, QMenu, QSystemTrayIcon
 
 from dictatux.dialogs import AdvancedUI
 from dictatux.engine_manager import EngineManager

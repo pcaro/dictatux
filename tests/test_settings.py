@@ -3,8 +3,8 @@ from __future__ import annotations
 import os
 
 import pytest
-from PyQt6.QtCore import QSettings
-from PyQt6.QtWidgets import QApplication
+from PySide6.QtCore import QSettings
+from PySide6.QtWidgets import QApplication
 
 from dictatux.engines.google.settings import GoogleCloudSettings
 from dictatux.engines.openai.settings import OpenAISettings
@@ -180,3 +180,15 @@ def test_settings_validation_via_dataclass(qt_app):
 
     with pytest.raises(ValueError, match="Invalid port"):
         settings.get_engine_settings()
+
+
+def test_load_migrates_legacy_openai_realtime_model(tmp_path):
+    backend, _ = _make_backend(tmp_path)
+    backend.setValue("OpenaiModel", "gpt-4o-mini-realtime-preview")
+    backend.sync()
+
+    settings = Settings(backend)
+    settings.load()
+
+    assert settings.openaiModel == "gpt-4o-mini-transcribe"
+    assert backend.value("OpenaiModel", type=str) == "gpt-4o-mini-transcribe"

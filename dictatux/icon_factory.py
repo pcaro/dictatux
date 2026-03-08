@@ -5,8 +5,8 @@ from __future__ import annotations
 
 from typing import Dict
 
-from PyQt6.QtCore import Qt
-from PyQt6.QtGui import QColor, QIcon, QPainter, QPixmap
+from PySide6.QtCore import Qt
+from PySide6.QtGui import QColor, QIcon, QPainter, QPixmap
 
 from .state_machine import IconState
 
@@ -27,9 +27,9 @@ class IconFactory:
         self._size = size
         self._cache: Dict[IconState, QIcon] = {}
         self._palette = palette or {
-            IconState.LOADING: QColor(255, 0, 0),       # Red
-            IconState.READY: QColor(0, 255, 0),         # Green
-            IconState.SUSPENDED: QColor(255, 165, 0),   # Orange
+            IconState.LOADING: QColor(255, 0, 0),  # Red
+            IconState.READY: QColor(0, 255, 0),  # Green
+            IconState.SUSPENDED: QColor(255, 165, 0),  # Orange
         }
 
     def get_icon(self, state: IconState) -> QIcon:

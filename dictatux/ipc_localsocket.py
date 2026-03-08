@@ -11,8 +11,8 @@ Works on Windows, Linux, and macOS.
 """
 
 import logging
-from PyQt6.QtCore import QSharedMemory, QIODevice
-from PyQt6.QtNetwork import QLocalServer, QLocalSocket
+from PySide6.QtCore import QSharedMemory, QIODevice
+from PySide6.QtNetwork import QLocalServer, QLocalSocket
 from dictatux.ipc_manager import IPCManager
 
 

@@ -3,6 +3,10 @@
 # Extrae cadenas traducibles del código Python
 # Uso: ./update_translations.sh
 
+set -e
+
+IMAGE_NAME="dictatux-dev-tools"
+
 echo "Actualizando archivos de traducción..."
 
 # Verificar que Docker está instalado
@@ -12,15 +16,21 @@ if ! command -v docker &> /dev/null; then
     exit 1
 fi
 
+# Verificar si la imagen existe, si no, construirla
+if ! docker image inspect "$IMAGE_NAME" > /dev/null 2>&1; then
+    echo "Imagen '$IMAGE_NAME' no encontrada. Construyendo..."
+    docker build -t "$IMAGE_NAME" -f Dockerfile.dev-tools .
+    echo "✓ Imagen construida exitosamente"
+fi
+
 # Ejecutar lupdate con Docker
+# -no-obsolete: Elimina entradas obsoletas/vanished que ya no existen
+# -extensions py: Procesa solo archivos Python
 docker run --rm \
     -v "$(pwd):/workspace" \
     -w /workspace \
-    ubuntu:22.04 bash -c "
-        apt-get update -qq && \
-        apt-get install -y -qq qt6-tools-dev-tools > /dev/null 2>&1 && \
-        lupdate dictatux/ -ts dictatux/translations/*.ts
-    "
+    "$IMAGE_NAME" \
+    lupdate -no-obsolete -extensions py dictatux/ -ts dictatux/translations/*.ts
 
 if [ $? -eq 0 ]; then
     echo "✓ Archivos de traducción actualizados"

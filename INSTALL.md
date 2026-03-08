@@ -76,7 +76,7 @@ uv pip install -e ".[whisper_local]"  # CPU version
 
 **Core Dependencies** (always installed):
 - Python 3.8+
-- PyQt6 (includes D-Bus support for KDE global shortcuts)
+- PySide6 (includes D-Bus support for KDE global shortcuts)
 - ujson
 - vosk
 - pyaudio

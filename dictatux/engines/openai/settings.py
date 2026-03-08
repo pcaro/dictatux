@@ -46,9 +46,16 @@ class OpenAISettings(EngineSettings):
                 "<b>gpt-4o-mini-transcribe:</b><br>"
                 "- Faster response<br>"
                 "- Lower cost<br>"
-                "- Good for general use"
+                "- Good for general use<br><br>"
+                "<b>gpt-4o-transcribe-latest:</b><br>"
+                "- Tracks latest quality improvements<br>"
+                "- Recommended for always-up-to-date accuracy"
             ),
-            "options": ["gpt-4o-transcribe", "gpt-4o-mini-transcribe"],
+            "options": [
+                "gpt-4o-transcribe",
+                "gpt-4o-mini-transcribe",
+                "gpt-4o-transcribe-latest",
+            ],
         }
     )
 

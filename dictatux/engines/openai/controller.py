@@ -105,7 +105,11 @@ class OpenAIRealtimeController(StreamingControllerBase[OpenAIRealtimeState]):
     def dictation_status(self) -> DictationStatus:
         if self.state in (OpenAIRealtimeState.STARTING, OpenAIRealtimeState.CONNECTING):
             return DictationStatus.INITIALIZING
-        elif self.state in (OpenAIRealtimeState.READY, OpenAIRealtimeState.RECORDING, OpenAIRealtimeState.TRANSCRIBING):
+        elif self.state in (
+            OpenAIRealtimeState.READY,
+            OpenAIRealtimeState.RECORDING,
+            OpenAIRealtimeState.TRANSCRIBING,
+        ):
             return DictationStatus.LISTENING
         elif self.state == OpenAIRealtimeState.SUSPENDED:
             return DictationStatus.SUSPENDED
@@ -117,6 +121,17 @@ class OpenAIRealtimeController(StreamingControllerBase[OpenAIRealtimeState]):
 
 class OpenAIRealtimeProcessRunner(StreamingRunnerBase):
     """Manages OpenAI Realtime API WebSocket connection and streaming."""
+
+    SESSION_MODEL_MAP = {
+        "gpt-4o-transcribe": "gpt-4o-realtime-preview",
+        "gpt-4o-mini-transcribe": "gpt-4o-mini-realtime-preview",
+        # Alias to always use latest transcription tuning while keeping
+        # backwards-compatible realtime session routing.
+        "gpt-4o-transcribe-latest": "gpt-4o-realtime-preview",
+    }
+    TRANSCRIPTION_MODEL_MAP = {
+        "gpt-4o-transcribe-latest": "gpt-4o-transcribe",
+    }
 
     def __init__(
         self,
@@ -146,11 +161,7 @@ class OpenAIRealtimeProcessRunner(StreamingRunnerBase):
         )
         self._controller = controller
         self._api_key = api_key
-        session_model_map = {
-            "gpt-4o-transcribe": "gpt-4o-realtime-preview",
-            "gpt-4o-mini-transcribe": "gpt-4o-mini-realtime-preview",
-        }
-        if model in session_model_map:
+        if model in self.SESSION_MODEL_MAP:
             self._model = model
         else:
             logging.warning(
@@ -158,7 +169,9 @@ class OpenAIRealtimeProcessRunner(StreamingRunnerBase):
                 model,
             )
             self._model = "gpt-4o-transcribe"
-        self._session_model = session_model_map.get(self._model, "gpt-4o-realtime-preview")
+        self._session_model = self.SESSION_MODEL_MAP.get(
+            self._model, "gpt-4o-realtime-preview"
+        )
         self._language = language
         self._api_version = api_version
         self._sample_rate = sample_rate
@@ -173,9 +186,13 @@ class OpenAIRealtimeProcessRunner(StreamingRunnerBase):
         self._sample_width_bytes = 2
         self._bytes_per_commit = max(
             1,
-            int(self._sample_rate * self._chunk_duration) * self._channels * self._sample_width_bytes,
+            int(self._sample_rate * self._chunk_duration)
+            * self._channels
+            * self._sample_width_bytes,
         )
-        min_commit_bytes = (self._sample_rate * self._channels * self._sample_width_bytes) // 5
+        min_commit_bytes = (
+            self._sample_rate * self._channels * self._sample_width_bytes
+        ) // 5
         if self._bytes_per_commit < min_commit_bytes:
             self._bytes_per_commit = min_commit_bytes
         self._response_active = False
@@ -293,13 +310,13 @@ class OpenAIRealtimeProcessRunner(StreamingRunnerBase):
         if self._vad_enabled:
             turn_detection = {
                 "type": "server_vad",
-                "threshold": self._vad_threshold,
+                "threshold": round(self._vad_threshold, 16),
                 "prefix_padding_ms": self._vad_prefix_padding_ms,
                 "silence_duration_ms": self._vad_silence_duration_ms,
                 "create_response": False,  # Don't create AI responses, just transcribe
             }
 
-        transcription_model = self._model or "gpt-4o-transcribe"
+        transcription_model = self._resolve_transcription_model(self._model)
 
         input_transcription: Dict[str, str] = {"model": transcription_model}
         if self._language:
@@ -315,7 +332,7 @@ class OpenAIRealtimeProcessRunner(StreamingRunnerBase):
             "session": {
                 "input_audio_format": "pcm16",
                 "input_audio_transcription": input_transcription,
-            }
+            },
         }
 
         if turn_detection:
@@ -326,6 +343,12 @@ class OpenAIRealtimeProcessRunner(StreamingRunnerBase):
 
         self._controller.transition_to("ready")
         self._ws_ready.set()
+
+    def _resolve_transcription_model(self, model: Optional[str]) -> str:
+        """Normalize UI model selection into API-supported transcription model."""
+        if not model:
+            return "gpt-4o-transcribe"
+        return self.TRANSCRIPTION_MODEL_MAP.get(model, model)
 
     def _on_message(self, ws, message) -> None:
         """Handle WebSocket message received."""
@@ -351,7 +374,12 @@ class OpenAIRealtimeProcessRunner(StreamingRunnerBase):
                 self._response_active = True
                 self._current_transcript.clear()
 
-            elif msg_type in {"response.completed", "response.errored", "response.refused", "response.cancelled"}:
+            elif msg_type in {
+                "response.completed",
+                "response.errored",
+                "response.refused",
+                "response.cancelled",
+            }:
                 response = data.get("response", {})
                 response_id = response.get("id")
                 if not response_id and "response" in data:
@@ -360,7 +388,10 @@ class OpenAIRealtimeProcessRunner(StreamingRunnerBase):
                     response_id = data.get("response_id")
                 if not response_id and self._current_response_id:
                     response_id = self._current_response_id
-                if self._current_transcript and response_id == self._current_response_id:
+                if (
+                    self._current_transcript
+                    and response_id == self._current_response_id
+                ):
                     final_text = "".join(self._current_transcript).strip()
                     if final_text:
                         self._controller.transition_to("transcribing")
@@ -378,7 +409,9 @@ class OpenAIRealtimeProcessRunner(StreamingRunnerBase):
             elif msg_type == "error":
                 error = data.get("error", {})
                 logging.error(f"OpenAI Realtime error: {error}")
-                message = error.get("message") if isinstance(error, dict) else str(error)
+                message = (
+                    error.get("message") if isinstance(error, dict) else str(error)
+                )
                 if message:
                     self._controller.emit_error(message)
 

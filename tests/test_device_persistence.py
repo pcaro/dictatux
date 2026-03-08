@@ -3,8 +3,8 @@
 
 import os
 import pytest
-from PyQt6.QtCore import QSettings
-from PyQt6.QtWidgets import QApplication
+from PySide6.QtCore import QSettings
+from PySide6.QtWidgets import QApplication
 
 from dictatux.dialogs import AdvancedUI
 from dictatux.settings import Settings

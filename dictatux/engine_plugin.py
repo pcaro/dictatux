@@ -6,7 +6,7 @@ from abc import ABC, abstractmethod
 from typing import Any, Dict, Iterable, Optional, Tuple, Type, TYPE_CHECKING
 
 if TYPE_CHECKING:  # pragma: no cover - used for type checkers only
-    from PyQt6.QtWidgets import QWidget
+    from PySide6.QtWidgets import QWidget
     from dictatux.base_settings import EngineSettings
     from dictatux.settings import Settings
 else:  # Fallbacks to avoid importing heavy modules at runtime
@@ -153,7 +153,7 @@ def get_engine_display_name(engine_id: str) -> str:
     Returns:
         Human-readable display name (translated if available)
     """
-    from PyQt6.QtCore import QCoreApplication
+    from PySide6.QtCore import QCoreApplication
 
     _translate = QCoreApplication.translate
     try:

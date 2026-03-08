@@ -13,7 +13,7 @@ with multiple implementations (D-Bus, QLocalServer) selected automatically.
 import logging
 from abc import ABCMeta, abstractmethod
 from typing import Optional
-from PyQt6.QtCore import QObject, pyqtSignal
+from PySide6.QtCore import QObject, Signal
 
 
 # Custom metaclass that combines QObject's metaclass with ABCMeta
@@ -29,7 +29,7 @@ class IPCManager(QObject, metaclass=QABCMeta):
         command_received: Emitted when a command is received from another instance
     """
 
-    command_received = pyqtSignal(str)  # command name
+    command_received = Signal(str)  # command name
 
     def __init__(self, app_id: str = "dictatux"):
         super().__init__()
@@ -89,7 +89,7 @@ def create_ipc_manager(app_id: str = "dictatux") -> IPCManager:
     """
     # Check if D-Bus session bus is actually available on the system
     try:
-        from PyQt6.QtDBus import QDBusConnection
+        from PySide6.QtDBus import QDBusConnection
 
         bus = QDBusConnection.sessionBus()
         if bus.isConnected():

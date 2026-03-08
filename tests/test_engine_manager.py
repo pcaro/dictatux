@@ -1,11 +1,14 @@
 from __future__ import annotations
 
 import os
+import threading
+import time
 from datetime import datetime, timedelta
 from typing import Dict, Optional, Sequence, Tuple
 
 import pytest
-from PyQt6.QtWidgets import QApplication
+from PySide6.QtCore import QCoreApplication, QThread
+from PySide6.QtWidgets import QApplication
 
 from dictatux.engine_manager import EngineManager
 from dictatux.status import DictationStatus
@@ -17,6 +20,14 @@ from tests.helpers import (
     DummySettings,
     HangingRunner,
 )
+
+
+def _drain_qt_events(timeout: float = 0.5) -> None:
+    """Process Qt events until timeout to flush queued signal deliveries."""
+    deadline = time.time() + timeout
+    while time.time() < deadline:
+        QCoreApplication.processEvents()
+        time.sleep(0.005)
 
 
 @pytest.fixture(scope="module")
@@ -258,3 +269,47 @@ def test_old_controller_exit_after_refresh_doesnt_affect_new_engine(
         "Old controller exit should not affect new engine"
     )
     assert manager._controller is new_controller, "Should still have new controller"
+
+
+def test_engine_manager_dispatches_exit_on_main_qt_thread(monkeypatch, qt_app):
+    """Queued signal dispatch should invoke callbacks on the Qt main thread."""
+    settings = DummySettings()
+    manager = EngineManager(settings, max_retries=2, retry_delay_ms=1)
+    callback_threads: list[object] = []
+
+    def on_exit(_return_code: int) -> None:
+        callback_threads.append(QThread.currentThread())
+
+    manager.on_exit = on_exit
+
+    created_controllers: list[DummyController] = []
+
+    def fake_create_engine(
+        engine_type: str, settings
+    ) -> Tuple[DummyController, DummyRunner]:
+        controller = DummyController()
+        runner = DummyRunner()
+        created_controllers.append(controller)
+        manager._controller = controller
+        manager._runner = runner
+        return controller, runner
+
+    monkeypatch.setattr("dictatux.engine_manager.create_stt_engine", fake_create_engine)
+
+    manager.create_engine()
+    controller = created_controllers[0]
+    done = threading.Event()
+
+    def emit_exit_from_worker() -> None:
+        controller.handle_exit(0)
+        done.set()
+
+    worker = threading.Thread(target=emit_exit_from_worker)
+    worker.start()
+    done.wait(timeout=1)
+    worker.join(timeout=1)
+
+    _drain_qt_events()
+
+    assert callback_threads, "Exit callback should be invoked"
+    assert callback_threads[0] is qt_app.thread()

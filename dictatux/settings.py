@@ -4,7 +4,7 @@ import logging
 import os
 from typing import Dict, List, Optional, Union
 
-from PyQt6.QtCore import QSettings
+from PySide6.QtCore import QSettings
 
 from dictatux.engine_plugin import (
     normalize_engine_name,

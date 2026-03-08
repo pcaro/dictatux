@@ -23,7 +23,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 - Project renamed from "elograf" to "Dictatux"
 - Updated all branding and documentation
 - Modular engine architecture with pluggable STT backends
-- Migrated to PyQt6
+- Migrated to PySide6
 
 ### Technical
 - Abstract STT interface (STTController, STTProcessRunner)

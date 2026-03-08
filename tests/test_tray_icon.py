@@ -4,8 +4,8 @@ import os
 from unittest.mock import MagicMock
 
 import pytest
-from PyQt6.QtGui import QIcon
-from PyQt6.QtWidgets import QApplication, QSystemTrayIcon
+from PySide6.QtGui import QIcon
+from PySide6.QtWidgets import QApplication, QSystemTrayIcon
 
 from dictatux.tray_icon import SystemTrayIcon
 

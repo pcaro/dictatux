@@ -13,8 +13,8 @@ KGlobalAccel for global keyboard shortcuts.
 import logging
 import subprocess
 from typing import Dict, Callable, List, Optional
-from PyQt6.QtCore import pyqtSlot, Qt
-from PyQt6.QtDBus import QDBusConnection, QDBusInterface, QDBusReply
+from PySide6.QtCore import Slot, Qt
+from PySide6.QtDBus import QDBusConnection, QDBusInterface, QDBusReply
 from dictatux.ipc_manager import IPCManager
 
 
@@ -119,37 +119,37 @@ class IPCDBus(IPCManager):
         logging.debug(f"Command '{command}' sent via D-Bus")
         return True
 
-    @pyqtSlot()
+    @Slot()
     def begin(self):
         """D-Bus slot for 'begin' command"""
         logging.debug("D-Bus: begin command received")
         self.command_received.emit("begin")
 
-    @pyqtSlot()
+    @Slot()
     def end(self):
         """D-Bus slot for 'end' command"""
         logging.debug("D-Bus: end command received")
         self.command_received.emit("end")
 
-    @pyqtSlot()
+    @Slot()
     def exit(self):
         """D-Bus slot for 'exit' command"""
         logging.debug("D-Bus: exit command received")
         self.command_received.emit("exit")
 
-    @pyqtSlot()
+    @Slot()
     def suspend(self):
         """D-Bus slot for 'suspend' command"""
         logging.debug("D-Bus: suspend command received")
         self.command_received.emit("suspend")
 
-    @pyqtSlot()
+    @Slot()
     def resume(self):
         """D-Bus slot for 'resume' command"""
         logging.debug("D-Bus: resume command received")
         self.command_received.emit("resume")
 
-    @pyqtSlot()
+    @Slot()
     def toggle(self):
         """D-Bus slot for 'toggle' command"""
         logging.debug("D-Bus: toggle command received")
@@ -291,7 +291,7 @@ class IPCDBus(IPCManager):
         # This is critical - without SetPresent, the component won't be marked as active
         flags = 2  # SetPresent flag
 
-        # PyQt6 cannot properly marshal array types to D-Bus without wrapping in QVariant
+        # PySide6 cannot properly marshal array types to D-Bus without wrapping in QVariant
         # Use dbus-send as workaround for KGlobalAccel.setShortcut
         action_id_str = ",".join(action_id)
 
@@ -459,7 +459,7 @@ class IPCDBus(IPCManager):
         )
         return True
 
-    @pyqtSlot(str, str, "qlonglong")
+    @Slot(str, str, "qlonglong")
     def _on_global_shortcut(self, component: str, unique_name: str, timestamp: int):
         """
         Handle global shortcut activation from KGlobalAccel.
@@ -489,7 +489,7 @@ class IPCDBus(IPCManager):
                 f"[KGlobalAccel] Available shortcuts: {list(self.shortcuts.keys())}"
             )
 
-    @pyqtSlot("QDBusMessage")
+    @Slot("QDBusMessage")
     def _on_global_shortcut_raw(self, msg):
         """Raw D-Bus message handler for debugging."""
         logging.debug(f"[KGlobalAccel] RAW SIGNAL RECEIVED: {msg.arguments()}")

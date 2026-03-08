@@ -17,8 +17,8 @@ import logging
 import argparse
 import signal
 from pathlib import Path
-from PyQt6.QtGui import QIcon, QStandardItemModel, QStandardItem, QInputMethod
-from PyQt6.QtCore import (
+from PySide6.QtGui import QIcon, QStandardItemModel, QStandardItem, QInputMethod
+from PySide6.QtCore import (
     QCoreApplication,
     QDir,
     QLibraryInfo,
@@ -29,9 +29,9 @@ from PyQt6.QtCore import (
     Qt,
     QTranslator,
     QTimer,
-    pyqtSlot,
+    Slot,
 )
-from PyQt6.QtWidgets import (
+from PySide6.QtWidgets import (
     QAbstractItemView,
     QApplication,
     QCheckBox,
