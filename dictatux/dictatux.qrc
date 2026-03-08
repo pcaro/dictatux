@@ -1,0 +1,9 @@
+<RCC>
+    <qresource prefix="/">
+        <file>icons/dictatux/index.theme</file>
+        <file>icons/dictatux/24/micro.png</file>
+        <file>icons/dictatux/24/nomicro.png</file>
+        <file>icons/dictatux/scalable/micro.svg</file>
+        <file>icons/dictatux/scalable/nomicro.svg</file>
+    </qresource>
+</RCC>

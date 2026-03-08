@@ -1,0 +1,197 @@
+from PyQt6 import QtCore, QtGui, QtWidgets
+
+
+class Ui_Dialog(object):
+    def setupUi(self, Dialog):
+        Dialog.setObjectName("Dialog")
+        Dialog.resize(850, 500)
+        sizePolicy = QtWidgets.QSizePolicy(
+            QtWidgets.QSizePolicy.Policy.Preferred,
+            QtWidgets.QSizePolicy.Policy.Preferred,
+        )
+        sizePolicy.setHorizontalStretch(1)
+        sizePolicy.setVerticalStretch(0)
+        sizePolicy.setHeightForWidth(Dialog.sizePolicy().hasHeightForWidth())
+        Dialog.setSizePolicy(sizePolicy)
+        self.gridLayout_2 = QtWidgets.QGridLayout(Dialog)
+        self.gridLayout_2.setObjectName("gridLayout_2")
+        self.tabWidget = QtWidgets.QTabWidget(parent=Dialog)
+        self.tabWidget.setObjectName("tabWidget")
+        self.general_tab = QtWidgets.QWidget()
+        self.general_tab.setObjectName("general_tab")
+        self.verticalLayout = QtWidgets.QVBoxLayout(self.general_tab)
+        self.verticalLayout.setObjectName("verticalLayout")
+        self.groupBox = QtWidgets.QGroupBox(parent=self.general_tab)
+        self.groupBox.setObjectName("groupBox")
+        self.gridLayout_8 = QtWidgets.QGridLayout(self.groupBox)
+        self.gridLayout_8.setObjectName("gridLayout_8")
+        self.label_stt_engine = QtWidgets.QLabel(parent=self.groupBox)
+        self.label_stt_engine.setObjectName("label_stt_engine")
+        self.gridLayout_8.addWidget(self.label_stt_engine, 0, 0, 1, 1)
+        self.stt_engine_cb = QtWidgets.QComboBox(parent=self.groupBox)
+        self.stt_engine_cb.setObjectName("stt_engine_cb")
+        self.gridLayout_8.addWidget(self.stt_engine_cb, 0, 1, 1, 1)
+        self.verticalLayout.addWidget(self.groupBox)
+        self.general_grid_layout = QtWidgets.QGridLayout()
+        self.general_grid_layout.setObjectName("general_grid_layout")
+
+        self.label_interface_language = QtWidgets.QLabel(parent=self.general_tab)
+        self.label_interface_language.setObjectName("label_interface_language")
+        self.general_grid_layout.addWidget(self.label_interface_language, 0, 0, 1, 1)
+        self.interface_language_cb = QtWidgets.QComboBox(parent=self.general_tab)
+        self.interface_language_cb.setObjectName("interface_language_cb")
+        self.interface_language_cb.addItem("")
+        self.interface_language_cb.addItem("")
+        self.general_grid_layout.addWidget(self.interface_language_cb, 0, 1, 1, 1)
+
+        self.precommand = QtWidgets.QLineEdit(parent=self.general_tab)
+        self.precommand.setObjectName("precommand")
+        self.general_grid_layout.addWidget(self.precommand, 1, 1, 1, 1)
+        self.label_10 = QtWidgets.QLabel(parent=self.general_tab)
+        self.label_10.setObjectName("label_10")
+        self.general_grid_layout.addWidget(self.label_10, 1, 0, 1, 1)
+        self.postcommand = QtWidgets.QLineEdit(parent=self.general_tab)
+        self.postcommand.setObjectName("postcommand")
+        self.general_grid_layout.addWidget(self.postcommand, 2, 1, 1, 1)
+        self.label_11 = QtWidgets.QLabel(parent=self.general_tab)
+        self.label_11.setObjectName("label_11")
+        self.general_grid_layout.addWidget(self.label_11, 2, 0, 1, 1)
+        self.env = QtWidgets.QLineEdit(parent=self.general_tab)
+        self.env.setObjectName("env")
+        self.general_grid_layout.addWidget(self.env, 3, 1, 1, 1)
+        self.label_12 = QtWidgets.QLabel(parent=self.general_tab)
+        self.label_12.setObjectName("label_12")
+        self.general_grid_layout.addWidget(self.label_12, 3, 0, 1, 1)
+        self.deviceName = QtWidgets.QComboBox(parent=self.general_tab)
+        self.deviceName.setCurrentText("")
+        self.deviceName.setObjectName("deviceName")
+        self.general_grid_layout.addWidget(self.deviceName, 4, 1, 1, 1)
+        self.label = QtWidgets.QLabel(parent=self.general_tab)
+        self.label.setObjectName("label")
+        self.general_grid_layout.addWidget(self.label, 4, 0, 1, 1)
+        self.label_13 = QtWidgets.QLabel(parent=self.general_tab)
+        self.label_13.setObjectName("label_13")
+        self.general_grid_layout.addWidget(self.label_13, 12, 0, 1, 1)
+        self.tool_cb = QtWidgets.QComboBox(parent=self.general_tab)
+        self.tool_cb.setObjectName("tool_cb")
+        self.tool_cb.addItem("")
+        self.tool_cb.addItem("")
+        self.general_grid_layout.addWidget(self.tool_cb, 12, 1, 1, 1)
+        self.label_14 = QtWidgets.QLabel(parent=self.general_tab)
+        self.label_14.setObjectName("label_14")
+        self.general_grid_layout.addWidget(self.label_14, 13, 0, 1, 1)
+        self.keyboard_le = QtWidgets.QLineEdit(parent=self.general_tab)
+        self.keyboard_le.setObjectName("keyboard_le")
+        self.general_grid_layout.addWidget(self.keyboard_le, 13, 1, 1, 1)
+        self.label_direct_click = QtWidgets.QLabel(parent=self.general_tab)
+        self.label_direct_click.setObjectName("label_direct_click")
+        self.general_grid_layout.addWidget(self.label_direct_click, 14, 0, 1, 1)
+        self.direct_click_cb = QtWidgets.QCheckBox(parent=self.general_tab)
+        self.direct_click_cb.setText("")
+        self.direct_click_cb.setObjectName("direct_click_cb")
+        self.general_grid_layout.addWidget(self.direct_click_cb, 14, 1, 1, 1)
+
+        self.general_grid_layout.setColumnStretch(1, 2)
+        self.verticalLayout.addLayout(self.general_grid_layout)
+        self.tabWidget.addTab(self.general_tab, "")
+        self.gridLayout_2.addWidget(self.tabWidget, 0, 0, 1, 1)
+        self.buttonBox = QtWidgets.QDialogButtonBox(parent=Dialog)
+        self.buttonBox.setOrientation(QtCore.Qt.Orientation.Horizontal)
+        self.buttonBox.setStandardButtons(
+            QtWidgets.QDialogButtonBox.StandardButton.Cancel
+            | QtWidgets.QDialogButtonBox.StandardButton.Ok
+        )
+        self.buttonBox.setObjectName("buttonBox")
+        self.gridLayout_2.addWidget(self.buttonBox, 1, 0, 1, 1)
+
+        self.retranslateUi(Dialog)
+        self.tabWidget.setCurrentIndex(0)
+        self.buttonBox.accepted.connect(Dialog.accept)  # type: ignore
+        self.buttonBox.rejected.connect(Dialog.reject)  # type: ignore
+        QtCore.QMetaObject.connectSlotsByName(Dialog)
+
+    def retranslateUi(self, Dialog):
+        _translate = QtCore.QCoreApplication.translate
+        Dialog.setWindowTitle(_translate("Dialog", "Advanced Settings"))
+        self.groupBox.setTitle(_translate("Dialog", "STT Engine"))
+        self.label_stt_engine.setToolTip(
+            _translate(
+                "Dialog",
+                "<b>Speech-to-Text Engine</b><br>Select the STT engine for dictation.<br><br><b>vosk-local:</b> Lightweight, offline, private<br><b>whisper-local:</b> High accuracy, offline, runs natively<br><b>whisper-docker:</b> High accuracy, requires Docker<br><b>google-cloud-speech:</b> Enterprise-grade, requires GCP account<br><b>openai-realtime:</b> Low latency, requires API key<br><b>gemini:</b> Google AI, requires API key",
+            )
+        )
+        self.label_stt_engine.setText(_translate("Dialog", "STT Engine"))
+
+        self.label_interface_language.setToolTip(
+            _translate(
+                "Dialog",
+                "<b>Interface Language</b><br>Language for the application interface.",
+            )
+        )
+        self.label_interface_language.setText(
+            _translate("Dialog", "Interface language")
+        )
+        self.interface_language_cb.setItemText(0, _translate("Dialog", "English"))
+        self.interface_language_cb.setItemText(1, _translate("Dialog", "Español"))
+
+        self.label_10.setToolTip(
+            _translate(
+                "Dialog",
+                "<b>Pre-command</b><br>Shell command to execute before starting dictation.<br><br><i>Typical use:</i> Prepare environment, change keyboard layout, etc.<br><i>Example:</i> setxkbmap us",
+            )
+        )
+        self.label_10.setText(_translate("Dialog", "Precommand"))
+        self.label_11.setToolTip(
+            _translate(
+                "Dialog",
+                '<b>Post-command</b><br>Shell command to execute after dictation stops.<br><br><i>Typical use:</i> Restore environment, send notifications, etc.<br><i>Example:</i> notify-send "Dictation ended"',
+            )
+        )
+        self.label_11.setText(_translate("Dialog", "Postcommand"))
+        self.label_12.setToolTip(
+            _translate(
+                "Dialog",
+                "<b>Environment Variables</b><br>Environment variables for the dictation process.<br><br><i>Format:</i> VAR1=value1, VAR2=value2<br><i>Example:</i> LD_LIBRARY_PATH=/opt/lib",
+            )
+        )
+        self.label_12.setText(_translate("Dialog", "Environment variables"))
+        self.label.setToolTip(
+            _translate(
+                "Dialog",
+                '<b>Audio Input Device</b><br>PulseAudio source device for recording.<br><br><i>To list available devices:</i><br><code>pactl list sources</code><br><br>Use the identifier after "Name:" in the output.',
+            )
+        )
+        self.label.setText(_translate("Dialog", "Pulse device name"))
+        self.label_13.setToolTip(
+            _translate(
+                "Dialog",
+                "<b>Input Simulation Tool</b><br>Method for typing transcribed text.<br><br><b>XDOTOOL:</b> Simulates X11 keyboard events<br>- More compatible with all applications<br>- Requires xdotool installed<br><br><b>DOTOOL:</b> Uses /dev/uinput directly<br>- Faster and more reliable<br>- Requires root or udev configuration",
+            )
+        )
+        self.label_13.setText(_translate("Dialog", "Input simulate tool"))
+        self.tool_cb.setItemText(0, _translate("Dialog", "XDOTOOL"))
+        self.tool_cb.setItemText(1, _translate("Dialog", "DOTOOL"))
+        self.label_14.setToolTip(
+            _translate(
+                "Dialog",
+                "<b>Keyboard Layout</b><br>Layout used by DOTOOL to simulate keystrokes.<br><br><i>Examples:</i> es, en, us, de, fr<br>Leave empty to auto-detect.",
+            )
+        )
+        self.label_14.setText(_translate("Dialog", "Keyboard layout"))
+        self.keyboard_le.setToolTip(
+            _translate(
+                "Dialog",
+                "<b>Keyboard Layout</b><br>Layout code used by DOTOOL method.<br><br><i>Examples:</i> es, en, us, de, fr<br>Leave empty for auto-detection.",
+            )
+        )
+        self.label_direct_click.setToolTip(
+            _translate(
+                "Dialog",
+                "<b>Direct Click Toggle</b><br>Tray icon click behavior.<br><br><b>Enabled:</b> Single click toggles dictation on/off<br><b>Disabled:</b> Click shows menu with Start/Stop buttons",
+            )
+        )
+        self.label_direct_click.setText(_translate("Dialog", "Direct click toggle"))
+
+        self.tabWidget.setTabText(
+            self.tabWidget.indexOf(self.general_tab), _translate("Dialog", "General")
+        )

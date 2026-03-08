@@ -1,0 +1,252 @@
+# Architecture
+
+Dictatux is designed with a modular architecture that separates the UI and system integration from the specific speech-to-text (STT) engines.
+
+## Abstract Interface Design
+
+Dictatux uses an abstract interface pattern to support multiple STT engines through a common API:
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│                     STT Engine Interface                      │
+│                    (stt_engine.py)                           │
+├─────────────────────────────────────────────────────────────┤
+│  STTController (ABC)          STTProcessRunner (ABC)        │
+│  ├─ add_state_listener()      ├─ start()                    │
+│  ├─ add_output_listener()     ├─ stop()                     │
+│  ├─ add_exit_listener()       ├─ suspend()                  │
+│  ├─ remove_exit_listener()    ├─ resume()                   │
+│  ├─ start()                   ├─ poll()                     │
+│  ├─ stop_requested()          └─ is_running()               │
+│  ├─ suspend_requested()                                      │
+│  └─ resume_requested()                                       │
+└─────────────────────────────────────────────────────────────┘
+```
+
+## Implementation Hierarchy
+
+```
+STTController                    STTProcessRunner
+     │                                  │
+     ├── VoskLocalController            ├── VoskLocalRunner
+     │   └── VoskLocalState             │   └── Native Vosk library
+     │                                  │
+     ├── WhisperLocalController         ├── WhisperLocalRunner
+     │   └── WhisperLocalState          │   └── Native faster-whisper
+     │                                  │
+     ├── WhisperDockerController        ├── WhisperDockerProcessRunner
+     │   └── WhisperDockerState         │   ├── Docker container management
+     │                                  │   ├── Audio recording (AudioRecorder)
+     │                                  │   ├── REST API client
+     │                                  │   └── Voice Activity Detection
+     │                                  │
+     ├── GoogleCloudSpeechController    ├── GoogleCloudSpeechProcessRunner
+     │   └── GoogleCloudSpeechState     │   ├── gRPC streaming client
+     │                                  │   ├── Audio recording (AudioRecorder)
+     │                                  │   └── Credentials management
+      │                                  │
+      ├── OpenAIRealtimeController       ├── OpenAIRealtimeProcessRunner
+      │   └── OpenAIRealtimeState        │   ├── WebSocket client
+      │                                  │   ├── Audio recording (AudioRecorder)
+      │                                  │   └── Real-time streaming
+      │                                  │
+      └── GeminiLiveController           └── GeminiLiveProcessRunner
+         └── GeminiLiveState                ├── WebSocket client
+                                            ├── Audio recording (AudioRecorder)
+                                            └── Real-time streaming
+```
+
+## Component Interaction Flow
+
+```
+┌──────────────┐
+│  SystemTray  │  User clicks icon / CLI command
+│     Icon     │
+└──────┬───────┘
+       │
+       ↓
+┌──────────────────┐
+│  STT Factory     │  create_stt_engine(engine_type, **kwargs)
+│  (stt_factory)   │  → Returns (Controller, Runner)
+└──────┬───────────┘
+       │
+       ↓
+┌──────────────────────────────────────────┐
+│     Controller        ←→      Runner     │
+│  ┌─────────────┐          ┌───────────┐ │
+│  │   States    │          │  Process  │ │
+│  │  Listeners  │          │  Control  │ │
+│  └──────┬──────┘          └─────┬─────┘ │
+│         │                        │       │
+│         └────── Events ──────────┘       │
+└──────────────────────────────────────────┘
+       │                        │
+       ↓                        ↓
+  State Updates          Audio/Transcription
+  (Icon changes)         (Text input simulation)
+```
+
+## State Machine
+
+Each engine implements its own state enum, but follows a common pattern:
+
+```
+IDLE
+  ↓
+STARTING  ──error──→  FAILED
+  ↓
+READY
+  ↓
+RECORDING  ←──resume──  SUSPENDED
+  ↓              ↑
+  └──suspend────┘
+  ↓
+TRANSCRIBING
+  ↓
+IDLE (on stop)
+```
+
+**State-specific behaviors:**
+- **IDLE**: No engine running
+- **STARTING**: Engine initialization
+- **READY**: Engine ready to record
+- **RECORDING**: Actively capturing audio
+- **TRANSCRIBING**: Processing audio (Whisper/Cloud only)
+- **SUSPENDED**: Paused, not recording
+- **FAILED**: Error occurred
+
+## Key Classes
+
+### `stt_engine.py`
+Abstract base classes defining the interface contract:
+- **STTController**: State management and event notification
+  - Provides listener registration/unregistration to prevent race conditions
+  - `remove_exit_listener()` prevents old controller exit events from affecting new engines
+- **STTProcessRunner**: Process lifecycle and audio handling
+
+**Race Condition Prevention**: When refreshing engines, old controller exit handlers could fire after a new engine was created, incorrectly incrementing the failure counter for the new engine. The `remove_exit_listener()` method allows EngineManager to unregister callbacks from the old controller before creating a new one, ensuring old process exit events don't affect new engine state.
+
+### `stt_factory.py`
+Factory functions for engine creation:
+- `create_stt_engine(engine_type, **kwargs)` → (Controller, Runner)
+- `get_available_engines()` → List of engine names
+- `is_engine_available(engine_type)` → bool
+
+### Engine Implementations
+
+Engine controllers and runners are located in the `dictatux/engines/` directory, organized as sub-packages (e.g., `dictatux/engines/vosk_local/`, `dictatux/engines/whisper_local/`, etc.).
+
+**`vosk_local/controller.py`**
+- Native Vosk library integration
+- Offline, low-resource processing
+- Direct audio stream processing
+
+**`whisper_local/controller.py`**
+- Native faster-whisper integration
+- High-accuracy offline processing
+- Context-aware transcription
+- Native audio streaming (no Docker)
+
+**`whisper/controller.py`**
+- Docker container lifecycle management
+- REST API communication (POST /asr)
+- Voice Activity Detection (VAD)
+- Automatic reconnection
+- Audio recording with AudioRecorder
+
+**`google/controller.py`**
+- gRPC streaming client
+- Service account authentication
+- Audio chunk streaming
+- Project auto-detection
+
+**`openai/controller.py`**
+- WebSocket bidirectional streaming
+- Server-side VAD configuration
+- Real-time partial transcriptions
+- Base64 audio encoding
+
+**`gemini/controller.py`**
+- WebSocket connection to Gemini Live API
+- Real-time streaming recognition
+- Multi-language support
+
+### `engine_manager.py`
+Manages STT engine lifecycle, configuration, and failure recovery:
+- **Engine Creation**: Creates engines via factory with proper listener registration
+- **Refresh Logic**: Safely replaces running engines with updated configuration
+  - Unregisters old controller callbacks before creating new engine
+  - Prevents race conditions from late exit events
+- **Failure Handling**: Implements circuit breaker pattern with fallback chain
+- **Retry Logic**: Exponential backoff for transient failures
+- **Timeout Protection**: Safety timer for stuck engine shutdowns
+
+### `tray_icon.py`
+System tray interface that:
+1. Loads settings
+2. Creates EngineManager with appropriate configuration
+3. Delegates engine lifecycle to EngineManager
+4. Updates icon and menu based on state
+5. Handles user interactions
+
+**Tray Menu Actions:**
+- **Start/Suspend/Resume dictation** (Dynamic action)
+- **Stop dictation** (Explicit stop action)
+- **Configuration**
+- **Exit**
+
+### `settings.py`
+Persistent configuration using QSettings:
+- Core settings (device, shortcuts, etc.)
+- Engine-specific settings (grouped by prefix)
+- Load/save with defaults
+
+## Audio Recording
+
+All streaming engines (Whisper Local, Whisper Docker, Google Cloud, OpenAI, Gemini) use a unified `AudioRecorder` class with pluggable backends:
+
+```python
+class AudioRecorder:
+    """Unified audio recorder with selectable backend."""
+
+    def __init__(self, sample_rate: int, channels: int,
+                 backend: str = "auto", device: Optional[str] = None)
+    def record_chunk(self, duration: float) -> bytes  # Returns WAV
+```
+
+**Backends:**
+- **parec** (Linux/PulseAudio): Preferred on Linux, supports device selection
+- **PyAudio**: Cross-platform fallback for other systems
+
+**Features:**
+- Format: PCM16 (16-bit signed integer)
+- Configurable sample rate and channels
+- Returns WAV-formatted audio data
+- Automatic backend detection (prefers parec on Linux)
+- Device selection support (parec backend only)
+
+## Text Input Simulation
+
+All engines use the same input simulation strategy:
+
+```python
+def _default_input_simulator(text: str):
+    try:
+        run(["dotool", "type", text])  # Wayland
+    except:
+        run(["xdotool", "type", "--", text])  # X11
+```
+
+## Configuration Storage
+
+Settings are stored per-engine with clear prefixes (e.g., `whisper`, `googleCloud`, `openai`, `gemini`, etc.).
+
+## File Locations
+
+| Item | Path |
+|------|------|
+| Configuration | `~/.config/Dictatux/Dictatux.conf` |
+| PID file | `~/.config/Dictatux/dictatux.pid` |
+| User models | `~/.config/vosk-models` |
+| System models | `/usr/share/vosk-models` |
+| Translations | `dictatux/translations/` |

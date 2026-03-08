@@ -1,0 +1,32 @@
+# Changelog
+
+All notable changes to this project will be documented in this file.
+
+The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
+
+## [0.1.0] - 2024-03-08
+
+### Added
+- Initial release of Dictatux (forked from elograf)
+- Multi-engine STT support: Whisper (Local), Vosk (Local), Google Cloud Speech, OpenAI Realtime API, Gemini Live API
+- System tray icon with state visualization (loading, ready, dictating, suspended, stopped)
+- Global keyboard shortcuts support (KDE via D-Bus)
+- CLI interface for remote control (--begin, --end, --suspend, --resume, --toggle)
+- Advanced configuration dialog with engine-specific settings
+- Audio device selection (PulseAudio/parec)
+- Pre/post command execution
+- Multi-language support (i18n via Qt Linguist)
+- Docker-based development tools for Qt resources and translations
+- Comprehensive test suite with pytest
+
+### Changed
+- Project renamed from "elograf" to "Dictatux"
+- Updated all branding and documentation
+- Modular engine architecture with pluggable STT backends
+- Migrated to PyQt6
+
+### Technical
+- Abstract STT interface (STTController, STTProcessRunner)
+- Engine lifecycle management with failure recovery
+- Unified audio recorder with PyAudio/parec backends
+- Qt resource compilation via Docker (no system Qt tools required)

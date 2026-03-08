@@ -1,0 +1,345 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+"""
+Created on Wed Jun 16 08:15:47 2021
+
+@author: Pablo Caro
+@co-author: papoteur
+@license: GPL v3.0
+"""
+
+import sys
+import os
+import re
+import shlex
+import urllib.request, urllib.error
+import logging
+import argparse
+import signal
+from pathlib import Path
+from PyQt6.QtGui import QIcon, QStandardItemModel, QStandardItem, QInputMethod
+from PyQt6.QtCore import (
+    QCoreApplication,
+    QDir,
+    QLibraryInfo,
+    QLocale,
+    QModelIndex,
+    QSettings,
+    QSize,
+    Qt,
+    QTranslator,
+    QTimer,
+    pyqtSlot,
+)
+from PyQt6.QtWidgets import (
+    QAbstractItemView,
+    QApplication,
+    QCheckBox,
+    QDialog,
+    QDialogButtonBox,
+    QFileDialog,
+    QHBoxLayout,
+    QMenu,
+    QProgressBar,
+    QPushButton,
+    QSizePolicy,
+    QSystemTrayIcon,
+    QTableWidget,
+    QVBoxLayout,
+    QWidget,
+    QTableView,
+)
+from subprocess import Popen, run
+from zipfile import ZipFile
+import dictatux.dictatux_rc  # type: ignore
+import dictatux.advanced as advanced  # type: ignore
+from importlib.metadata import version
+from dictatux.settings import DEFAULT_RATE, Settings
+from dictatux.model_repository import (
+    MODEL_GLOBAL_PATH,
+    MODEL_LIST,
+    MODEL_USER_PATH,
+    MODELS_URL,
+    download_model_archive,
+    download_model_list,
+    ensure_user_model_dir,
+    filter_available_models,
+    get_size,
+    load_model_index,
+    model_list_path,
+)
+from dictatux.ipc_manager import create_ipc_manager, IPCManager
+from dictatux.utils import get_icon
+
+from dictatux.tray_icon import SystemTrayIcon
+from dictatux.pidfile import remove_pid_file, write_pid_file
+from dictatux.cli import build_parser, choose_ipc_command, handle_model_commands
+
+# Types.
+from typing import (
+    Any,
+    Tuple,
+    List,
+    Dict,
+    Optional,
+)
+
+
+def setup_signal_handlers(tray_icon):
+    """
+    Setup signal handlers for graceful shutdown.
+
+    Handles SIGTERM, SIGINT (Ctrl+C), and SIGHUP.
+    Uses a flag-based approach with QTimer to check for signals.
+    """
+    # Flag to track if we should exit
+    tray_icon._should_exit = False
+
+    def signal_handler(signum, frame):
+        """Set exit flag when signal is received"""
+        sig_name = signal.Signals(signum).name
+        logging.debug(f"Received signal {sig_name}, will exit on next timer check...")
+        tray_icon._should_exit = True
+
+    # Register signal handlers
+    signal.signal(signal.SIGTERM, signal_handler)  # kill command
+    signal.signal(signal.SIGINT, signal_handler)  # Ctrl+C
+    if hasattr(signal, "SIGHUP"):
+        signal.signal(signal.SIGHUP, signal_handler)  # Terminal hangup
+
+    # Timer to periodically check if we should exit
+    def check_exit_flag():
+        if tray_icon._should_exit:
+            logging.debug("Exiting due to signal...")
+            tray_icon.exit()
+
+    timer = QTimer()
+    timer.timeout.connect(check_exit_flag)
+    timer.start(200)  # Check every 200ms
+    tray_icon._exit_timer = timer  # Keep reference to prevent garbage collection
+
+
+class ColoredFormatter(logging.Formatter):
+    """Logging Formatter to add colors to terminal output."""
+
+    # ANSI escape sequences for colors
+    GREY = "\x1b[38;21m"
+    YELLOW = "\x1b[33;21m"
+    RED = "\x1b[31;21m"
+    BOLD_RED = "\x1b[31;1m"
+    RESET = "\x1b[0m"
+    FORMAT = "%(message)s"
+
+    FORMATS = {
+        logging.DEBUG: GREY + FORMAT + RESET,
+        logging.INFO: RESET + FORMAT + RESET,  # Standard color for INFO
+        logging.WARNING: YELLOW + FORMAT + RESET,
+        logging.ERROR: RED + FORMAT + RESET,
+        logging.CRITICAL: BOLD_RED + FORMAT + RESET,
+    }
+
+    def format(self, record):
+        log_fmt = self.FORMATS.get(record.levelno)
+        formatter = logging.Formatter(log_fmt)
+        return formatter.format(record)
+
+
+def setup_logging(args: argparse.Namespace) -> None:
+    """Configure logging based on command-line arguments."""
+    if args.loglevel is not None:
+        numeric_level = getattr(logging, args.loglevel.upper(), None)
+    else:
+        numeric_level = logging.INFO
+    if not isinstance(numeric_level, int):
+        raise ValueError("Invalid log level: %s" % args.loglevel)
+
+    # Configure root logger with custom colored formatter
+    root_logger = logging.getLogger()
+    root_logger.setLevel(numeric_level)
+
+    # Clear existing handlers if any
+    for handler in root_logger.handlers[:]:
+        root_logger.removeHandler(handler)
+
+    handler = logging.StreamHandler()
+    handler.setFormatter(ColoredFormatter())
+    root_logger.addHandler(handler)
+
+    # Silence excessively verbose third-party loggers even in DEBUG mode
+    # These libraries generate too much noise (like connection state changes)
+    logging.getLogger("urllib3").setLevel(logging.WARNING)
+    logging.getLogger("httpx").setLevel(logging.WARNING)
+    logging.getLogger("httpcore").setLevel(logging.WARNING)
+    logging.getLogger("faster_whisper").setLevel(logging.WARNING)
+    logging.getLogger("websockets").setLevel(logging.WARNING)
+    logging.getLogger("asyncio").setLevel(logging.WARNING)
+
+
+def handle_cli_commands_and_exit_if_needed(
+    args: argparse.Namespace, ipc: IPCManager
+) -> None:
+    """
+    Handles CLI commands, either by executing them directly or sending them to a running instance.
+    Exits the application if a command is sent, if an instance is already running, or after a model command.
+    """
+    # Handle model commands first as they don't require a running instance
+    result = handle_model_commands(args, Settings())
+    if result is not None:
+        if result.stdout:
+            print(result.stdout, end="")
+        if result.stderr:
+            print(result.stderr, end="", file=sys.stderr)
+        sys.exit(result.code)
+
+    command = choose_ipc_command(args)
+
+    # If there's a command and an instance is running, send command and exit
+    if command and ipc.is_running():
+        if ipc.send_command(command):
+            print(f"✓ Command '{command}' sent successfully")
+            sys.exit(0)
+        else:
+            print(f"✗ Failed to send '{command}' command", file=sys.stderr)
+            sys.exit(1)
+
+    # If there's a command but no instance is running
+    if command:
+        if command in ("exit", "end"):
+            print(f"No running instance to {command}")
+            sys.exit(1)
+        # For 'begin', continue to launch the app
+
+    # If trying to launch without command and an instance is already running
+    if not command and ipc.is_running():
+        print("Dictatux is already running", file=sys.stderr)
+        print("\nAvailable commands:")
+        print("  dictatux --begin         : Start dictation")
+        print("  dictatux --end           : Stop dictation")
+        print("  dictatux --suspend       : Suspend dictation")
+        print("  dictatux --resume        : Resume dictation")
+        print("  dictatux --exit          : Exit application")
+        print("  dictatux --list-models   : List available models")
+        print("  dictatux --set-model M   : Set active model to M")
+        print("  dictatux --list-engines  : List available STT engines")
+        print("  dictatux --use-engine E  : Use STT engine E for this session")
+        sys.exit(1)
+
+
+def load_translations(app: QApplication, language_code: str) -> None:
+    """Load and apply translations dynamically."""
+    # Remove existing translators if present
+    if hasattr(app, "_qt_translator"):
+        app.removeTranslator(app._qt_translator)
+    if hasattr(app, "_app_translator"):
+        app.removeTranslator(app._app_translator)
+
+    LOCAL_DIR = Path(__file__).resolve().parent
+    path = str(LOCAL_DIR / "translations")
+
+    qtTranslator = QTranslator()
+    # Handle language codes like 'en', 'es', or locales like 'es_ES'
+    lang_base = language_code.split("_")[0] if "_" in language_code else language_code
+
+    if qtTranslator.load(
+        f"qt_{language_code}",
+        QLibraryInfo.path(QLibraryInfo.LibraryPath.TranslationsPath),
+    ) or qtTranslator.load(
+        f"qt_{lang_base}", QLibraryInfo.path(QLibraryInfo.LibraryPath.TranslationsPath)
+    ):
+        app.installTranslator(qtTranslator)
+        app._qt_translator = qtTranslator
+
+    appTranslator = QTranslator()
+
+    # Try specific locale first, then generic
+    loaded = appTranslator.load(f"dictatux_{language_code}", path)
+    if not loaded and lang_base != language_code:
+        loaded = appTranslator.load(f"dictatux_{lang_base}", path)
+
+    if loaded:
+        app.installTranslator(appTranslator)
+        app._app_translator = appTranslator
+    elif language_code != "en" and lang_base != "en":
+        # English is the default, so it's okay if 'en' is not found
+        logging.warning("No translation file found for language '%s'", language_code)
+
+
+def setup_application(app: QApplication) -> None:
+    """Configure and prepare the QApplication instance."""
+    app.setDesktopFileName("Dictatux")
+    # don't close application when closing setting window
+    app.setQuitOnLastWindowClosed(False)
+
+    settings = Settings()
+    settings.load()
+    lang = getattr(settings, "interfaceLanguage", "en")
+
+    load_translations(app, lang)
+
+
+def run_application(
+    app: QApplication, args: argparse.Namespace, ipc: IPCManager
+) -> None:
+    """Run the main application event loop."""
+    ipc_backend = "D-Bus" if ipc.supports_global_shortcuts() else "Local Sockets"
+    logging.info(f"Dictatux started (using {ipc_backend})")
+    logging.debug("Available commands:")
+    logging.debug("  dictatux --begin         : Start dictation")
+    logging.debug("  dictatux --end           : Stop dictation")
+    logging.debug("  dictatux --suspend       : Suspend dictation")
+    logging.debug("  dictatux --resume        : Resume dictation")
+    logging.debug("  dictatux --exit          : Exit application")
+    logging.debug("  dictatux --list-models   : List available models")
+    logging.debug("  dictatux --set-model M   : Set active model to M")
+    logging.debug("  dictatux --list-engines  : List available STT engines")
+    logging.debug("  dictatux --use-engine E  : Use STT engine E for this session")
+
+    command = choose_ipc_command(args)
+    w = QWidget()
+    trayIcon = SystemTrayIcon(
+        get_icon("microphone-sensitivity-muted", ":/icons/dictatux/24/nomicro.png"),
+        args.begin if command == "begin" else False,
+        ipc,
+        w,
+        temporary_engine=args.use_engine
+        if hasattr(args, "use_engine") and args.use_engine
+        else None,
+    )
+
+    # Setup signal handlers for graceful shutdown
+    setup_signal_handlers(trayIcon)
+
+    # Write PID file for daemon management
+    write_pid_file()
+
+    trayIcon.show()
+    exit_code = app.exec()
+
+    # Ensure cleanup on exit
+    remove_pid_file()
+    trayIcon.ipc.cleanup()
+    sys.exit(exit_code)
+
+
+def main() -> None:
+    parser = build_parser()
+    args = parser.parse_args()
+
+    if args.version:
+        print(f"Dictatux {version('Dictatux')}")
+        sys.exit(0)
+
+    setup_logging(args)
+
+    app = QApplication(sys.argv)
+    ipc = create_ipc_manager("dictatux")
+
+    handle_cli_commands_and_exit_if_needed(args, ipc)
+
+    # Normal startup - create new instance
+    setup_application(app)
+    run_application(app, args, ipc)
+
+
+if __name__ == "__main__":
+    main()

@@ -1,0 +1,18 @@
+# Build artifacts
+*.pyc
+__pycache__/
+*.egg-info/
+build/
+dist/
+
+# Virtual environment
+.venv/
+venv/
+env/
+
+# Local configuration
+.claude/settings.local.json
+
+# Version file generated at build time
+dictatux/version.py
+.serena/

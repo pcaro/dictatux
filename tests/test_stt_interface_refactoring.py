@@ -1,0 +1,114 @@
+# ABOUTME: Tests for refactored STTController interface with explicit state transitions.
+# ABOUTME: Verifies new transition_to(), emit_transcription(), emit_error() methods work across all engines.
+
+from __future__ import annotations
+
+import pytest
+
+from dictatux.engines.whisper.controller import WhisperDockerController
+from dictatux.engines.whisper.settings import WhisperSettings
+
+# Conditional imports for engines with optional dependencies
+try:
+    from dictatux.engines.google.controller import GoogleCloudSpeechController
+    from dictatux.engines.google.settings import GoogleCloudSettings
+
+    HAS_GOOGLE_CLOUD = True
+except ImportError:
+    HAS_GOOGLE_CLOUD = False
+
+try:
+    from dictatux.engines.openai.controller import OpenAIRealtimeController
+    from dictatux.engines.openai.settings import OpenAISettings
+
+    HAS_OPENAI = True
+except ImportError:
+    HAS_OPENAI = False
+
+
+def make_whisper_controller(**kwargs) -> WhisperDockerController:
+    return WhisperDockerController(WhisperSettings(**kwargs))
+
+
+if HAS_GOOGLE_CLOUD:
+
+    def make_google_controller(**kwargs):
+        return GoogleCloudSpeechController(GoogleCloudSettings(**kwargs))
+else:
+
+    def make_google_controller(**kwargs):  # pragma: no cover - guarded by skipif
+        raise RuntimeError("Google Cloud controller unavailable")
+
+
+if HAS_OPENAI:
+
+    def make_openai_controller(**kwargs):
+        return OpenAIRealtimeController(OpenAISettings(**kwargs))
+else:
+
+    def make_openai_controller(**kwargs):  # pragma: no cover - guarded by skipif
+        raise RuntimeError("OpenAI controller unavailable")
+
+
+def test_whisper_controller_transition_to():
+    """Test WhisperDockerController.transition_to() method."""
+    controller = make_whisper_controller()
+
+    states_seen = []
+    controller.add_state_listener(lambda state: states_seen.append(state))
+
+    controller.transition_to("ready")
+    controller.transition_to("recording")
+    controller.transition_to("transcribing")
+
+    assert len(states_seen) >= 3
+
+
+@pytest.mark.skipif(not HAS_GOOGLE_CLOUD, reason="google-cloud-speech not available")
+def test_google_cloud_controller_transition_to():
+    """Test GoogleCloudSpeechController.transition_to() method."""
+    controller = make_google_controller()
+
+    states_seen = []
+    controller.add_state_listener(lambda state: states_seen.append(state))
+
+    controller.transition_to("connecting")
+    controller.transition_to("ready")
+    controller.transition_to("recording")
+
+    assert len(states_seen) >= 3
+
+
+@pytest.mark.skipif(not HAS_OPENAI, reason="openai not available")
+def test_openai_controller_transition_to():
+    """Test OpenAIRealtimeController.transition_to() method."""
+    controller = make_openai_controller()
+
+    states_seen = []
+    controller.add_state_listener(lambda state: states_seen.append(state))
+
+    controller.transition_to("connecting")
+    controller.transition_to("ready")
+    controller.transition_to("recording")
+
+    assert len(states_seen) >= 3
+
+
+def test_all_controllers_have_unified_interface():
+    """Test that all controllers implement the unified interface."""
+    controllers = [
+        make_whisper_controller(),
+    ]
+
+    if HAS_GOOGLE_CLOUD:
+        controllers.append(make_google_controller())
+    if HAS_OPENAI:
+        controllers.append(make_openai_controller())
+
+    for controller in controllers:
+        assert hasattr(controller, "transition_to")
+        assert hasattr(controller, "emit_transcription")
+        assert hasattr(controller, "emit_error")
+        assert callable(controller.transition_to)
+        assert callable(controller.emit_transcription)
+        assert callable(controller.emit_error)
