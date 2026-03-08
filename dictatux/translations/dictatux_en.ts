@@ -4,34 +4,34 @@
 <context>
     <name>AdvancedUI</name>
     <message>
-        <location filename="../dialogs.py" line="257"/>
-        <location filename="../dialogs.py" line="394"/>
+        <location filename="../dialogs.py" line="260"/>
+        <location filename="../dialogs.py" line="403"/>
         <source>Clear shortcut</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../dialogs.py" line="262"/>
-        <location filename="../dialogs.py" line="444"/>
+        <location filename="../dialogs.py" line="264"/>
+        <location filename="../dialogs.py" line="453"/>
         <source>Refresh audio device list</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../dialogs.py" line="495"/>
+        <location filename="../dialogs.py" line="504"/>
         <source>General Settings:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../dialogs.py" line="508"/>
+        <location filename="../dialogs.py" line="516"/>
         <source>The following warnings were found:</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../dialogs.py" line="512"/>
+        <location filename="../dialogs.py" line="520"/>
         <source>Do you want to save anyway?</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <location filename="../dialogs.py" line="516"/>
+        <location filename="../dialogs.py" line="525"/>
         <source>Validation Warnings</source>
         <translation type="unfinished"></translation>
     </message>
@@ -39,22 +39,22 @@
 <context>
     <name>ConfigPopup</name>
     <message>
-        <location filename="../model_ui/dialogs.py" line="292"/>
+        <location filename="../model_ui/dialogs.py" line="306"/>
         <source>Manage Models</source>
         <translation>Manage Models</translation>
     </message>
     <message>
-        <location filename="../model_ui/dialogs.py" line="307"/>
+        <location filename="../model_ui/dialogs.py" line="323"/>
         <source>Import remote model</source>
         <translation>Import remote model</translation>
     </message>
     <message>
-        <location filename="../model_ui/dialogs.py" line="309"/>
+        <location filename="../model_ui/dialogs.py" line="325"/>
         <source>Import local model</source>
         <translation>Import local model</translation>
     </message>
     <message>
-        <location filename="../model_ui/dialogs.py" line="370"/>
+        <location filename="../model_ui/dialogs.py" line="386"/>
         <source>We will download the list of models from {}.
 Do you agree?</source>
         <translation type="unfinished"></translation>
@@ -71,27 +71,27 @@ Do you agree?</source>
 <context>
     <name>DownloadPopup</name>
     <message>
-        <location filename="../model_ui/dialogs.py" line="180"/>
+        <location filename="../model_ui/dialogs.py" line="182"/>
         <source>Import system wide</source>
         <translation>Import system wide</translation>
     </message>
     <message>
-        <location filename="../model_ui/dialogs.py" line="182"/>
+        <location filename="../model_ui/dialogs.py" line="184"/>
         <source>Import in user space</source>
         <translation>Import in user space</translation>
     </message>
     <message>
-        <location filename="../model_ui/dialogs.py" line="215"/>
+        <location filename="../model_ui/dialogs.py" line="219"/>
         <source>The application failed to save the model. Do you want to retry?</source>
         <translation>The application failed to save the model. Do you want to retry?</translation>
     </message>
     <message>
-        <location filename="../model_ui/dialogs.py" line="226"/>
+        <location filename="../model_ui/dialogs.py" line="231"/>
         <source>The model can&apos;t be saved. Check for space available or credentials for {}</source>
         <translation>The model can&apos;t be saved. Check for space available or credentials for {}</translation>
     </message>
     <message>
-        <location filename="../model_ui/dialogs.py" line="248"/>
+        <location filename="../model_ui/dialogs.py" line="255"/>
         <source>We will download the model {} of {} from {}. Do you agree?</source>
         <translation>We will download the model {} of {} from {}. Do you agree?</translation>
     </message>
@@ -101,7 +101,6 @@ Do you agree?</source>
     <message>
         <location filename="../model_ui/dialogs.py" line="56"/>
         <source>Language</source>
-        <extracomment>Engine display names for translation extraction These strings are extracted for translation but used dynamically</extracomment>
         <translation>Language</translation>
     </message>
     <message>
