@@ -123,11 +123,9 @@ class OpenAIRealtimeProcessRunner(StreamingRunnerBase):
     """Manages OpenAI Realtime API WebSocket connection and streaming."""
 
     SESSION_MODEL_MAP = {
-        "gpt-4o-transcribe": "gpt-4o-realtime-preview",
-        "gpt-4o-mini-transcribe": "gpt-4o-mini-realtime-preview",
-        # Alias to always use latest transcription tuning while keeping
-        # backwards-compatible realtime session routing.
-        "gpt-4o-transcribe-latest": "gpt-4o-realtime-preview",
+        "gpt-4o-transcribe": "gpt-realtime-1.5",
+        "gpt-4o-mini-transcribe": "gpt-realtime-1.5-mini",
+        "gpt-4o-transcribe-latest": "gpt-realtime-1.5",
     }
     TRANSCRIPTION_MODEL_MAP = {
         "gpt-4o-transcribe-latest": "gpt-4o-transcribe",
@@ -138,7 +136,7 @@ class OpenAIRealtimeProcessRunner(StreamingRunnerBase):
         controller: OpenAIRealtimeController,
         *,
         api_key: str,
-        model: str = "gpt-4o-transcribe",
+        model: str = "gpt-4o-mini-transcribe",
         language: Optional[str] = None,
         api_version: str = "2025-08-28",
         sample_rate: int = 16000,
@@ -161,16 +159,21 @@ class OpenAIRealtimeProcessRunner(StreamingRunnerBase):
         )
         self._controller = controller
         self._api_key = api_key
-        if model in self.SESSION_MODEL_MAP:
+        valid_transcription_models = [
+            "gpt-4o-transcribe",
+            "gpt-4o-mini-transcribe",
+            "gpt-4o-transcribe-latest",
+        ]
+        if model in valid_transcription_models:
             self._model = model
         else:
             logging.warning(
-                "OpenAI transcription model '%s' is unsupported; defaulting to gpt-4o-transcribe",
+                "OpenAI transcription model '%s' is unsupported; defaulting to gpt-4o-mini-transcribe",
                 model,
             )
-            self._model = "gpt-4o-transcribe"
+            self._model = "gpt-4o-mini-transcribe"
         self._session_model = self.SESSION_MODEL_MAP.get(
-            self._model, "gpt-4o-realtime-preview"
+            self._model, "gpt-realtime-1.5-mini"
         )
         self._language = language
         self._api_version = api_version

@@ -12,10 +12,7 @@ from dictatux.base_settings import EngineSettings
 class OpenAISettings(EngineSettings):
     """Settings for OpenAI Realtime API engine."""
 
-    engine_type: str = field(
-        default="openai-realtime",
-        metadata={"hidden": True}
-    )
+    engine_type: str = field(default="openai-realtime", metadata={"hidden": True})
 
     api_key: str = field(
         default="",
@@ -28,17 +25,17 @@ class OpenAISettings(EngineSettings):
                 "<i>Get your key at:</i> platform.openai.com/api-keys<br>"
                 "<i>Note:</i> Requires billing enabled on your account"
             ),
-        }
+        },
     )
 
     model: str = field(
-        default="gpt-4o-transcribe",
+        default="gpt-4o-mini-transcribe",
         metadata={
             "label": "Transcription Model",
             "widget": "dropdown",
             "tooltip": (
                 "<b>Transcription Model</b><br>"
-                "Select the model for speech recognition.<br><br>"
+                "Select the model for speech-to-text transcription.<br><br>"
                 "<b>gpt-4o-transcribe:</b><br>"
                 "- Higher accuracy<br>"
                 "- Better for complex vocabulary<br>"
@@ -46,17 +43,18 @@ class OpenAISettings(EngineSettings):
                 "<b>gpt-4o-mini-transcribe:</b><br>"
                 "- Faster response<br>"
                 "- Lower cost<br>"
-                "- Good for general use<br><br>"
+                "- Good for general use<br>"
+                "- <b>Recommended default</b><br><br>"
                 "<b>gpt-4o-transcribe-latest:</b><br>"
                 "- Tracks latest quality improvements<br>"
-                "- Recommended for always-up-to-date accuracy"
+                "- Always up-to-date accuracy"
             ),
             "options": [
                 "gpt-4o-transcribe",
                 "gpt-4o-mini-transcribe",
                 "gpt-4o-transcribe-latest",
             ],
-        }
+        },
     )
 
     api_version: str = field(
@@ -65,7 +63,7 @@ class OpenAISettings(EngineSettings):
             "label": "API Version",
             "widget": "text",
             "tooltip": "Realtime API version string appended to the WebSocket URL",
-        }
+        },
     )
 
     sample_rate: int = field(
@@ -74,7 +72,7 @@ class OpenAISettings(EngineSettings):
             "label": "Sample Rate",
             "widget": "text",
             "tooltip": "PCM sample rate used when capturing audio for the websocket stream",
-        }
+        },
     )
 
     channels: int = field(
@@ -83,7 +81,7 @@ class OpenAISettings(EngineSettings):
             "label": "Channels",
             "widget": "text",
             "tooltip": "Number of audio channels streamed to OpenAI (mono required)",
-        }
+        },
     )
 
     vad_enabled: bool = field(
@@ -91,8 +89,12 @@ class OpenAISettings(EngineSettings):
         metadata={
             "label": "VAD Enabled",
             "widget": "checkbox",
-            "tooltip": "Enable server-side voice activity detection to segment speech automatically",
-        }
+            "tooltip": (
+                "Enable server-side voice activity detection (OpenAI's VAD) to segment speech automatically.<br><br>"
+                "<b>Note:</b> This uses OpenAI's server-side VAD, not Dictatux's local VAD.<br>"
+                "When enabled, OpenAI's servers detect speech boundaries and trigger transcription automatically."
+            ),
+        },
     )
 
     vad_threshold: float = field(
@@ -101,7 +103,7 @@ class OpenAISettings(EngineSettings):
             "label": "VAD Threshold",
             "widget": "text",
             "tooltip": "Energy threshold between 0.0 and 1.0 for server VAD speech detection",
-        }
+        },
     )
 
     vad_prefix_padding_ms: int = field(
@@ -110,7 +112,7 @@ class OpenAISettings(EngineSettings):
             "label": "VAD Prefix Padding (ms)",
             "widget": "text",
             "tooltip": "Milliseconds of audio retained before speech start when VAD triggers",
-        }
+        },
     )
 
     vad_silence_duration_ms: int = field(
@@ -119,7 +121,7 @@ class OpenAISettings(EngineSettings):
             "label": "VAD Silence Duration (ms)",
             "widget": "text",
             "tooltip": "Silence duration in milliseconds required to finalize a segment",
-        }
+        },
     )
 
     language: str = field(
@@ -128,10 +130,12 @@ class OpenAISettings(EngineSettings):
             "label": "Language",
             "widget": "text",
             "tooltip": "BCP-47 language code (leave empty to let the model auto-detect)",
-        }
+        },
     )
 
     def __post_init__(self):
         """Validate VAD threshold is between 0 and 1."""
         if not 0.0 <= self.vad_threshold <= 1.0:
-            raise ValueError(f"VAD threshold must be between 0 and 1, got {self.vad_threshold}")
+            raise ValueError(
+                f"VAD threshold must be between 0 and 1, got {self.vad_threshold}"
+            )
