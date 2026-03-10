@@ -55,6 +55,7 @@ class GoogleCloudSpeechPlugin(EnginePlugin):
         app_settings.googleCloudChannels = engine_settings.channels
         app_settings.googleCloudVadEnabled = engine_settings.vad_enabled
         app_settings.googleCloudVadThreshold = engine_settings.vad_threshold
+        app_settings.googleCloudUsePartials = engine_settings.use_partials
 
     def load_settings_from_app(self, app_settings: "Settings") -> GoogleCloudSettings:
         """Create GoogleCloudSettings from application Settings."""
@@ -70,6 +71,7 @@ class GoogleCloudSpeechPlugin(EnginePlugin):
             channels=app_settings.googleCloudChannels,
             vad_enabled=app_settings.googleCloudVadEnabled,
             vad_threshold=app_settings.googleCloudVadThreshold,
+            use_partials=app_settings.googleCloudUsePartials,
         )
 
     def check_availability(self):  # type: ignore[override]

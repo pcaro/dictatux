@@ -73,6 +73,7 @@ class Settings:
         self.googleCloudChannels: int = 1
         self.googleCloudVadEnabled: bool = True
         self.googleCloudVadThreshold: float = 50.0
+        self.googleCloudUsePartials: bool = False
         self.openaiApiKey: str = ""
         self.openaiModel: str = "gpt-4o-mini-transcribe"
         self.openaiApiVersion: str = "2025-08-28"
@@ -164,6 +165,9 @@ class Settings:
         )
         self.googleCloudVadThreshold = backend.value(
             "GoogleCloudVadThreshold", 50.0, type=float
+        )
+        self.googleCloudUsePartials = backend.value(
+            "GoogleCloudUsePartials", False, type=bool
         )
         self.openaiApiKey = backend.value("OpenaiApiKey", "", type=str)
         self.openaiModel = backend.value("OpenaiModel", "gpt-4o-mini-transcribe", type=str)
@@ -329,6 +333,7 @@ class Settings:
             backend.remove("GoogleCloudVadThreshold")
         else:
             backend.setValue("GoogleCloudVadThreshold", self.googleCloudVadThreshold)
+        backend.setValue("GoogleCloudUsePartials", int(self.googleCloudUsePartials))
         self._set_or_remove("OpenaiApiKey", self.openaiApiKey)
         if self.openaiModel == "gpt-4o-mini-transcribe":
             backend.remove("OpenaiModel")

@@ -45,6 +45,7 @@ def test_load_defaults_when_backend_empty(tmp_path):
     assert settings.suspendShortcut == ""
     assert settings.resumeShortcut == ""
     assert settings.toggleShortcut == ""
+    assert settings.googleCloudUsePartials is False
     assert settings.models == []
 
 
@@ -64,6 +65,7 @@ def test_save_persists_custom_values(tmp_path):
     settings.suspendShortcut = "Ctrl+Alt+S"
     settings.resumeShortcut = "Ctrl+Alt+R"
     settings.toggleShortcut = "Ctrl+Alt+T"
+    settings.googleCloudUsePartials = True
 
     settings.save()
     backend.sync()
@@ -82,6 +84,7 @@ def test_save_persists_custom_values(tmp_path):
     assert reloaded.value("SuspendShortcut") == "Ctrl+Alt+S"
     assert reloaded.value("ResumeShortcut") == "Ctrl+Alt+R"
     assert reloaded.value("ToggleShortcut") == "Ctrl+Alt+T"
+    assert reloaded.value("GoogleCloudUsePartials", type=int) == 1
 
 
 def test_add_and_remove_model_updates_backend(tmp_path):

@@ -33,9 +33,9 @@ def test_google_settings_metadata():
     fields = dataclasses.fields(GoogleCloudSettings)
     field_dict = {f.name: f for f in fields}
 
-    # Check credentials_path has text widget
+    # Check credentials_path has file_picker widget
     creds_field = field_dict["credentials_path"]
-    assert creds_field.metadata["widget"] == "text"
+    assert creds_field.metadata["widget"] == "file_picker"
     assert creds_field.metadata["label"] == "Credentials Path"
 
 

@@ -110,6 +110,65 @@ class GoogleCloudSpeechController(StreamingControllerBase[GoogleCloudSpeechState
             return DictationStatus.IDLE
 
 
+class GooglePartialHandler:
+    """Helper to handle partial transcriptions and manage backspaces."""
+
+    def __init__(self, input_simulator: Callable[[str], None]) -> None:
+        self._input_simulator = input_simulator
+        self._last_partial = ""
+
+    def _get_prefix_length(self, s1: str, s2: str) -> int:
+        min_len = min(len(s1), len(s2))
+        for i in range(min_len):
+            if s1[i] != s2[i]:
+                return i
+        return min_len
+
+    def handle_partial(self, transcript: str) -> None:
+        """Process an interim (partial) transcription."""
+        if not transcript.strip():
+            return
+
+        # If it's the same as before, do nothing
+        if transcript == self._last_partial:
+            return
+
+        # Calculate common prefix to avoid deleting what didn't change
+        prefix_len = self._get_prefix_length(self._last_partial, transcript)
+
+        # Delete the differing suffix of the last partial
+        backspaces_needed = len(self._last_partial) - prefix_len
+        if backspaces_needed > 0:
+            self._input_simulator("\b" * backspaces_needed)
+
+        # Type the new suffix
+        new_suffix = transcript[prefix_len:]
+        if new_suffix:
+            self._input_simulator(new_suffix)
+            
+        self._last_partial = transcript
+
+    def handle_final(self, transcript: str) -> None:
+        """Process a final transcription and reset state."""
+        if not transcript.strip():
+            if self._last_partial:
+                self._input_simulator("\b" * len(self._last_partial))
+                self._last_partial = ""
+            return
+
+        prefix_len = self._get_prefix_length(self._last_partial, transcript)
+        
+        backspaces_needed = len(self._last_partial) - prefix_len
+        if backspaces_needed > 0:
+            self._input_simulator("\b" * backspaces_needed)
+
+        new_suffix = transcript[prefix_len:]
+        if new_suffix:
+            self._input_simulator(new_suffix)
+
+        self._last_partial = ""
+
+
 class GoogleCloudSpeechProcessRunner(StreamingRunnerBase):
     """Manages Google Cloud Speech API streaming recognition."""
 
@@ -127,6 +186,7 @@ class GoogleCloudSpeechProcessRunner(StreamingRunnerBase):
         chunk_duration: float = 0.1,
         vad_enabled: bool = True,
         vad_threshold: float = 500.0,
+        use_partials: bool = False,
         device: Optional[str] = None,
         input_simulator: Optional[Callable[[str], None]] = None,
     ) -> None:
@@ -146,6 +206,7 @@ class GoogleCloudSpeechProcessRunner(StreamingRunnerBase):
         self._model = model
         self._vad_enabled = vad_enabled
         self._vad_threshold = vad_threshold
+        self._use_partials = use_partials
         self._input_simulator = input_simulator or type_text
 
         self._audio_queue: Optional[queue.Queue[Optional[bytes]]] = None
@@ -154,6 +215,9 @@ class GoogleCloudSpeechProcessRunner(StreamingRunnerBase):
         self._recognizer: Optional[str] = None
         self._streaming_config = None
         self._speech_types = None
+        self._partial_handler: Optional[GooglePartialHandler] = None
+        if self._use_partials:
+            self._partial_handler = GooglePartialHandler(self._input_simulator)
 
     def _verify_credentials(self) -> bool:
         """Verify Google Cloud credentials are available."""
@@ -308,9 +372,16 @@ class GoogleCloudSpeechProcessRunner(StreamingRunnerBase):
                     if not result.alternatives:
                         continue
                     transcript = result.alternatives[0].transcript
-                    if result.is_final and transcript.strip():
-                        self._controller.emit_transcription(transcript)
-                        self._input_simulator(transcript)
+                    if result.is_final:
+                        if transcript.strip():
+                            self._controller.emit_transcription(transcript)
+                        
+                        if self._partial_handler:
+                            self._partial_handler.handle_final(transcript)
+                        elif transcript.strip():
+                            self._input_simulator(transcript)
+                    elif self._partial_handler:
+                        self._partial_handler.handle_partial(transcript)
                 self._controller.set_recording()
         except Exception as exc:  # pragma: no cover - defensive
             logging.exception("Streaming loop error")

@@ -136,6 +136,20 @@ class GoogleCloudSettings(EngineSettings):
         }
     )
 
+    use_partials: bool = field(
+        default=False,
+        metadata={
+            "label": "Use Partials",
+            "widget": "checkbox",
+            "tooltip": (
+                "<b>Experimental: Real-time Partials</b><br>"
+                "Show intermediate results as you speak.<br><br>"
+                "<i>Note:</i> Uses backspaces to correct text in real-time. "
+                "Works best in terminals and editors with fast input."
+            ),
+        }
+    )
+
     def __post_init__(self):
         """Validate sample rate is in valid range."""
         if not 8000 <= self.sample_rate <= 48000:
