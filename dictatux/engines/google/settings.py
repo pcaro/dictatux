@@ -21,7 +21,8 @@ class GoogleCloudSettings(EngineSettings):
         default="",
         metadata={
             "label": "Credentials Path",
-            "widget": "text",
+            "widget": "file_picker",
+            "file_filter": "JSON Files (*.json);;All Files (*)",
             "tooltip": (
                 "<b>Service Account Credentials</b><br>"
                 "Path to the Google Cloud service account JSON key file.<br><br>"
@@ -42,6 +43,30 @@ class GoogleCloudSettings(EngineSettings):
         }
     )
 
+    location: str = field(
+        default="global",
+        metadata={
+            "label": "Location",
+            "widget": "dropdown",
+            "options": [
+                {"label": "Global (Default)", "value": "global"},
+                {"label": "United States (Multi-region)", "value": "us"},
+                {"label": "European Union (Multi-region)", "value": "eu"},
+                {"label": "US Central 1 (Iowa)", "value": "us-central1"},
+                {"label": "Europe West 1 (Belgium)", "value": "europe-west1"},
+                {"label": "Europe West 4 (Netherlands)", "value": "europe-west4"},
+            ],
+            "tooltip": (
+                "<b>GCP Location</b><br>"
+                "The Google Cloud region to use for recognition.<br><br>"
+                "<b>Common values:</b><br>"
+                "<b>global:</b> Default, works for many models<br>"
+                "<b>us/eu:</b> Multi-region (recommended for chirp_3)<br>"
+                "<b>Regional:</b> Specific regional endpoints"
+            ),
+        }
+    )
+
     language_code: str = field(
         default="en-US",
         metadata={
@@ -55,16 +80,22 @@ class GoogleCloudSettings(EngineSettings):
         default="chirp_3",
         metadata={
             "label": "Model",
-            "widget": "text",
+            "widget": "dropdown",
+            "options": [
+                {"label": "Chirp 3 (Latest Gen)", "value": "chirp_3"},
+                {"label": "Long (Optimized for long-form)", "value": "long"},
+                {"label": "Short (Optimized for short utterances)", "value": "short"},
+                {"label": "Telephony (Phone calls)", "value": "telephony"},
+                {"label": "Medical Dictation", "value": "medical_dictation"},
+                {"label": "Medical Conversation", "value": "medical_conversation"},
+            ],
             "tooltip": (
                 "<b>Speech Recognition Model</b><br>"
                 "Google Cloud Speech model to use.<br><br>"
                 "<b>Recommended models:</b><br>"
                 "<b>chirp_3:</b> Latest generation, best quality<br>"
-                "<b>latest_long:</b> Optimized for long-form audio<br>"
-                "<b>latest_short:</b> Optimized for short utterances<br>"
-                "<b>command_and_search:</b> Voice commands<br>"
-                "<b>phone_call:</b> Telephony audio"
+                "<b>long:</b> Optimized for long-form audio<br>"
+                "<b>short:</b> Optimized for short utterances"
             ),
         }
     )
@@ -97,7 +128,7 @@ class GoogleCloudSettings(EngineSettings):
     )
 
     vad_threshold: float = field(
-        default=500.0,
+        default=50.0,
         metadata={
             "label": "VAD Threshold",
             "widget": "text",

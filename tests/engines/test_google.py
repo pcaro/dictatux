@@ -23,9 +23,10 @@ def test_google_cloud_settings_defaults():
     assert settings.sample_rate == 16000
     assert settings.channels == 1
     assert settings.vad_enabled is True
-    assert settings.vad_threshold == 500.0
+    assert settings.vad_threshold == 50.0
     assert settings.credentials_path == ""
     assert settings.project_id == ""
+    assert settings.location == "global"
 
 
 def test_google_cloud_settings_validates_sample_rate():
@@ -127,6 +128,7 @@ def test_runner_configuration():
         controller,
         credentials_path="/path/to/creds.json",
         project_id="my-project",
+        location="us",
         language_code="es-ES",
         model="chirp_3",
         sample_rate=22050,
@@ -137,6 +139,7 @@ def test_runner_configuration():
 
     assert runner._credentials_path == "/path/to/creds.json"
     assert runner._project_id == "my-project"
+    assert runner._location == "us"
     assert runner._language_code == "es-ES"
     assert runner._model == "chirp_3"
     assert runner._sample_rate == 22050
@@ -182,6 +185,7 @@ def test_settings_google_cloud_fields():
 
     assert hasattr(settings, 'googleCloudCredentialsPath')
     assert hasattr(settings, 'googleCloudProjectId')
+    assert hasattr(settings, 'googleCloudLocation')
     assert hasattr(settings, 'googleCloudLanguageCode')
     assert hasattr(settings, 'googleCloudModel')
     assert hasattr(settings, 'googleCloudSampleRate')
@@ -190,9 +194,10 @@ def test_settings_google_cloud_fields():
     assert hasattr(settings, 'googleCloudVadThreshold')
 
     # Test defaults
+    assert settings.googleCloudLocation == "global"
     assert settings.googleCloudLanguageCode == "en-US"
     assert settings.googleCloudModel == "chirp_3"
     assert settings.googleCloudSampleRate == 16000
     assert settings.googleCloudChannels == 1
     assert settings.googleCloudVadEnabled is True
-    assert settings.googleCloudVadThreshold == 500.0
+    assert settings.googleCloudVadThreshold == 50.0

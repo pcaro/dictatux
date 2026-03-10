@@ -19,6 +19,7 @@ from PySide6.QtWidgets import (
     QFormLayout,
     QHBoxLayout,
     QVBoxLayout,
+    QFileDialog,
 )
 from PySide6.QtCore import Qt, QCoreApplication
 
@@ -116,6 +117,42 @@ def create_widget_from_field(field: Field, value: Any) -> QWidget:
             widget.setToolTip(format_tooltip(metadata["tooltip"]))
         return widget
 
+    elif widget_type == "file_picker":
+        container = QWidget()
+        layout = QHBoxLayout(container)
+        layout.setContentsMargins(0, 0, 0, 0)
+
+        line_edit = QLineEdit()
+        line_edit.setText(str(value) if value is not None else "")
+        if "tooltip" in metadata:
+            line_edit.setToolTip(format_tooltip(metadata["tooltip"]))
+
+        button = QPushButton("...")
+        button.setMaximumWidth(40)
+
+        def pick_file():
+            # Get current path as start directory
+            start_dir = line_edit.text() if line_edit.text() else ""
+            file_filter = metadata.get("file_filter", "All Files (*)")
+            file_path, _ = QFileDialog.getOpenFileName(
+                container,
+                metadata.get("label", "Select File"),
+                start_dir,
+                file_filter
+            )
+            if file_path:
+                line_edit.setText(file_path)
+
+        button.clicked.connect(pick_file)
+
+        layout.addWidget(line_edit)
+        layout.addWidget(button)
+
+        # Store references for later value reading
+        container.line_edit = line_edit  # type: ignore
+
+        return container
+
     elif widget_type == "checkbox":
         widget = QCheckBox()
         widget.setChecked(bool(value))
@@ -140,11 +177,17 @@ def create_widget_from_field(field: Field, value: Any) -> QWidget:
             # Use static options from metadata
             options = metadata.get("options", [])
             for option in options:
-                combo.addItem(option, option)
-                if option in option_descriptions:
+                if isinstance(option, dict):
+                    label = option.get("label", str(option.get("value", "")))
+                    value_to_store = option.get("value", label)
+                    combo.addItem(label, value_to_store)
+                else:
+                    combo.addItem(str(option), option)
+                
+                if str(option) in option_descriptions:
                     index = combo.count() - 1
                     combo.setItemData(
-                        index, option_descriptions[option], Qt.ItemDataRole.ToolTipRole
+                        index, option_descriptions[str(option)], Qt.ItemDataRole.ToolTipRole
                     )
 
         # Set current value
@@ -385,6 +428,10 @@ def read_settings_from_tab(tab: QWidget, settings_class: Type) -> Any:
                 else:
                     values[field.name] = text_value
 
+        elif widget_type == "file_picker":
+            if hasattr(widget, "line_edit"):
+                values[field.name] = widget.line_edit.text()
+
         elif widget_type == "checkbox":
             if isinstance(widget, QCheckBox):
                 values[field.name] = widget.isChecked()
@@ -427,6 +474,10 @@ def _get_widget_value(widget: QWidget, field: dataclasses.Field) -> Any:
     elif widget_type == "checkbox":
         if isinstance(widget, QCheckBox):
             return widget.isChecked()
+
+    elif widget_type == "file_picker":
+        if hasattr(widget, "line_edit"):
+            return widget.line_edit.text()
 
     elif widget_type == "dropdown":
         # Check if it's a refreshable container or direct combo box

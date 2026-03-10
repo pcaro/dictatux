@@ -48,6 +48,7 @@ class GoogleCloudSpeechPlugin(EnginePlugin):
         app_settings.deviceName = engine_settings.device_name
         app_settings.googleCloudCredentialsPath = engine_settings.credentials_path
         app_settings.googleCloudProjectId = engine_settings.project_id
+        app_settings.googleCloudLocation = engine_settings.location
         app_settings.googleCloudLanguageCode = engine_settings.language_code
         app_settings.googleCloudModel = engine_settings.model
         app_settings.googleCloudSampleRate = engine_settings.sample_rate
@@ -62,6 +63,7 @@ class GoogleCloudSpeechPlugin(EnginePlugin):
             device_name=app_settings.deviceName,
             credentials_path=app_settings.googleCloudCredentialsPath,
             project_id=app_settings.googleCloudProjectId,
+            location=app_settings.googleCloudLocation,
             language_code=app_settings.googleCloudLanguageCode,
             model=app_settings.googleCloudModel,
             sample_rate=app_settings.googleCloudSampleRate,

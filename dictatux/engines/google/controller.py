@@ -119,6 +119,7 @@ class GoogleCloudSpeechProcessRunner(StreamingRunnerBase):
         *,
         credentials_path: Optional[str] = None,
         project_id: Optional[str] = None,
+        location: str = "global",
         language_code: str = "en-US",
         model: str = "chirp_3",
         sample_rate: int = 16000,
@@ -140,6 +141,7 @@ class GoogleCloudSpeechProcessRunner(StreamingRunnerBase):
         self._controller = controller
         self._credentials_path = credentials_path
         self._project_id = project_id
+        self._location = location
         self._language_code = language_code
         self._model = model
         self._vad_enabled = vad_enabled
@@ -185,7 +187,10 @@ class GoogleCloudSpeechProcessRunner(StreamingRunnerBase):
             return False
 
         self._speech_types = cloud_speech_types
-        self._client = SpeechClient()
+        client_options = None
+        if self._location != "global":
+            client_options = {"api_endpoint": f"{self._location}-speech.googleapis.com"}
+        self._client = SpeechClient(client_options=client_options)
         self._controller.transition_to("connecting")
 
         try:
@@ -196,13 +201,20 @@ class GoogleCloudSpeechProcessRunner(StreamingRunnerBase):
             return False
 
         recognition_config = cloud_speech_types.RecognitionConfig(
-            auto_decoding_config=cloud_speech_types.AutoDetectDecodingConfig(),
+            explicit_decoding_config=cloud_speech_types.ExplicitDecodingConfig(
+                encoding=cloud_speech_types.ExplicitDecodingConfig.AudioEncoding.LINEAR16,
+                sample_rate_hertz=self._sample_rate,
+                audio_channel_count=self._channels,
+            ),
             language_codes=[self._language_code],
             model=self._model,
         )
 
         self._streaming_config = cloud_speech_types.StreamingRecognitionConfig(
             config=recognition_config,
+            streaming_features=cloud_speech_types.StreamingRecognitionFeatures(
+                interim_results=True
+            ),
         )
 
         self._audio_queue = queue.Queue()
@@ -243,7 +255,7 @@ class GoogleCloudSpeechProcessRunner(StreamingRunnerBase):
 
     def _resolve_recognizer_name(self) -> str:
         if self._project_id:
-            return f"projects/{self._project_id}/locations/global/recognizers/_"
+            return f"projects/{self._project_id}/locations/{self._location}/recognizers/_"
 
         from google.auth import default
 
@@ -251,7 +263,7 @@ class GoogleCloudSpeechProcessRunner(StreamingRunnerBase):
         if not project_id:
             raise ValueError("Could not determine project ID")
         logging.info("Using project: %s", project_id)
-        return f"projects/{project_id}/locations/global/recognizers/_"
+        return f"projects/{project_id}/locations/{self._location}/recognizers/_"
 
     def _request_generator(self):
         assert self._speech_types is not None
@@ -263,15 +275,25 @@ class GoogleCloudSpeechProcessRunner(StreamingRunnerBase):
             streaming_config=self._streaming_config,
         )
 
+        # Send a tiny bit of silence to keep the stream alive and prevent timeout
+        # if the user doesn't speak immediately.
+        yield self._speech_types.StreamingRecognizeRequest(audio=b"\0" * 320)
+
         while True:
             if self._audio_queue is None:
                 break
-            chunk = self._audio_queue.get()
-            if chunk is None:
-                break
             if self._stop_event.is_set():
                 break
-            yield self._speech_types.StreamingRecognizeRequest(audio=chunk)
+            
+            try:
+                # Wait for a chunk with a timeout to avoid starving the stream
+                chunk = self._audio_queue.get(timeout=5.0)
+                if chunk is None:
+                    break
+                yield self._speech_types.StreamingRecognizeRequest(audio=chunk)
+            except queue.Empty:
+                # Send a tiny bit of silence to keep the connection alive
+                yield self._speech_types.StreamingRecognizeRequest(audio=b"\0" * 320)
 
     def _response_loop(self) -> None:
         if not self._client or not self._speech_types:

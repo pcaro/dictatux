@@ -66,12 +66,13 @@ class Settings:
         self.whisperAutoReconnect: bool = True
         self.googleCloudCredentialsPath: str = ""
         self.googleCloudProjectId: str = ""
+        self.googleCloudLocation: str = "global"
         self.googleCloudLanguageCode: str = "en-US"
         self.googleCloudModel: str = "chirp_3"
         self.googleCloudSampleRate: int = 16000
         self.googleCloudChannels: int = 1
         self.googleCloudVadEnabled: bool = True
-        self.googleCloudVadThreshold: float = 500.0
+        self.googleCloudVadThreshold: float = 50.0
         self.openaiApiKey: str = ""
         self.openaiModel: str = "gpt-4o-mini-transcribe"
         self.openaiApiVersion: str = "2025-08-28"
@@ -149,6 +150,7 @@ class Settings:
             "GoogleCloudCredentialsPath", "", type=str
         )
         self.googleCloudProjectId = backend.value("GoogleCloudProjectId", "", type=str)
+        self.googleCloudLocation = backend.value("GoogleCloudLocation", "global", type=str)
         self.googleCloudLanguageCode = backend.value(
             "GoogleCloudLanguageCode", "en-US", type=str
         )
@@ -161,7 +163,7 @@ class Settings:
             "GoogleCloudVadEnabled", True, type=bool
         )
         self.googleCloudVadThreshold = backend.value(
-            "GoogleCloudVadThreshold", 500.0, type=float
+            "GoogleCloudVadThreshold", 50.0, type=float
         )
         self.openaiApiKey = backend.value("OpenaiApiKey", "", type=str)
         self.openaiModel = backend.value("OpenaiModel", "gpt-4o-mini-transcribe", type=str)
@@ -302,6 +304,10 @@ class Settings:
             "GoogleCloudCredentialsPath", self.googleCloudCredentialsPath
         )
         self._set_or_remove("GoogleCloudProjectId", self.googleCloudProjectId)
+        if self.googleCloudLocation == "global":
+            backend.remove("GoogleCloudLocation")
+        else:
+            backend.setValue("GoogleCloudLocation", self.googleCloudLocation)
         if self.googleCloudLanguageCode == "en-US":
             backend.remove("GoogleCloudLanguageCode")
         else:
@@ -319,7 +325,7 @@ class Settings:
         else:
             backend.setValue("GoogleCloudChannels", self.googleCloudChannels)
         backend.setValue("GoogleCloudVadEnabled", int(self.googleCloudVadEnabled))
-        if self.googleCloudVadThreshold == 500.0:
+        if self.googleCloudVadThreshold == 50.0:
             backend.remove("GoogleCloudVadThreshold")
         else:
             backend.setValue("GoogleCloudVadThreshold", self.googleCloudVadThreshold)
