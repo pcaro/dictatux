@@ -239,8 +239,7 @@ dictatux/
 │   │   ├── whisper_local/              # Whisper Local
 │   │   ├── whisper/                    # Whisper Docker
 │   │   ├── google/                     # Google Cloud Speech
-│   │   ├── openai/                     # OpenAI Realtime
-│   │   └── gemini/                     # Gemini Live
+│   │   └── openai/                     # OpenAI Realtime
 │   ├── tray_icon.py                    # System tray interface
 │   ├── settings.py                     # Persistent configuration
 │   ├── dialogs.py                      # Configuration dialogs

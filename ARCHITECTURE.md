@@ -49,12 +49,8 @@ STTController                    STTProcessRunner
       │   └── OpenAIRealtimeState        │   ├── WebSocket client
       │                                  │   ├── Audio recording (AudioRecorder)
       │                                  │   └── Real-time streaming
-      │                                  │
-      └── GeminiLiveController           └── GeminiLiveProcessRunner
-         └── GeminiLiveState                ├── WebSocket client
-                                            ├── Audio recording (AudioRecorder)
-                                            └── Real-time streaming
-```
+      │
+      └── Audio Recording (AudioRecorder)```
 
 ## Component Interaction Flow
 
@@ -166,11 +162,6 @@ Engine controllers and runners are located in the `dictatux/engines/` directory,
 - Real-time partial transcriptions
 - Base64 audio encoding
 
-**`gemini/controller.py`**
-- WebSocket connection to Gemini Live API
-- Real-time streaming recognition
-- Multi-language support
-
 ### `engine_manager.py`
 Manages STT engine lifecycle, configuration, and failure recovery:
 - **Engine Creation**: Creates engines via factory with proper listener registration
@@ -203,7 +194,7 @@ Persistent configuration using QSettings:
 
 ## Audio Recording
 
-All streaming engines (Whisper Local, Whisper Docker, Google Cloud, OpenAI, Gemini) use a unified `AudioRecorder` class with pluggable backends:
+All streaming engines (Whisper Local, Whisper Docker, Google Cloud, OpenAI) use a unified `AudioRecorder` class with pluggable backends:
 
 ```python
 class AudioRecorder:
@@ -239,7 +230,7 @@ def _default_input_simulator(text: str):
 
 ## Configuration Storage
 
-Settings are stored per-engine with clear prefixes (e.g., `whisper`, `googleCloud`, `openai`, `gemini`, etc.).
+Settings are stored per-engine with clear prefixes (e.g., `whisper`, `googleCloud`, `openai`, etc.).
 
 ## File Locations
 

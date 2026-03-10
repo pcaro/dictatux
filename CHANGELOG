@@ -8,7 +8,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ### Added
 - Initial release of Dictatux (forked from elograf)
-- Multi-engine STT support: Whisper (Local), Vosk (Local), Google Cloud Speech, OpenAI Realtime API, Gemini Live API
+- Multi-engine STT support: Whisper (Local), Vosk (Local), Google Cloud Speech, OpenAI Realtime API
 - System tray icon with state visualization (loading, ready, dictating, suspended, stopped)
 - Global keyboard shortcuts support (KDE via D-Bus)
 - CLI interface for remote control (--begin, --end, --suspend, --resume, --toggle)

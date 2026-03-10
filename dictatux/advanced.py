@@ -117,7 +117,7 @@ class Ui_Dialog(object):
         self.label_stt_engine.setToolTip(
             _translate(
                 "Dialog",
-                "<b>Speech-to-Text Engine</b><br>Select the STT engine for dictation.<br><br><b>vosk-local:</b> Lightweight, offline, private<br><b>whisper-local:</b> High accuracy, offline, runs natively<br><b>whisper-docker:</b> High accuracy, requires Docker<br><b>google-cloud-speech:</b> Enterprise-grade, requires GCP account<br><b>openai-realtime:</b> Low latency, requires API key<br><b>gemini:</b> Google AI, requires API key",
+                "<b>Speech-to-Text Engine</b><br>Select the STT engine for dictation.<br><br><b>vosk-local:</b> Lightweight, offline, private<br><b>whisper-local:</b> High accuracy, offline, runs natively<br><b>whisper-docker:</b> High accuracy, requires Docker<br><b>google-cloud-speech:</b> Enterprise-grade, requires GCP account<br><b>openai-realtime:</b> Low latency, requires API key",
             )
         )
         self.label_stt_engine.setText(_translate("Dialog", "STT Engine"))

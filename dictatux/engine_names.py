@@ -16,5 +16,4 @@ engine_names = [
     _translate("EngineRegistry", "Whisper (Docker)"),
     _translate("EngineRegistry", "Google Cloud Speech"),
     _translate("EngineRegistry", "OpenAI Realtime API"),
-    _translate("EngineRegistry", "Gemini Live API"),
 ]

@@ -39,7 +39,7 @@ def _build_fallback_chain() -> Dict[str, List[str]]:
     # Define engine categories for fallback priority
     local_engines = ["vosk-local", "whisper-local"]
     docker_engines = ["whisper-docker"]
-    cloud_engines = ["openai-realtime", "google-cloud-speech", "gemini-live"]
+    cloud_engines = ["openai-realtime", "google-cloud-speech"]
 
     def get_fallbacks(engine: str) -> List[str]:
         """Get fallback chain for an engine, excluding itself."""

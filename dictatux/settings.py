@@ -73,7 +73,7 @@ class Settings:
         self.googleCloudVadEnabled: bool = True
         self.googleCloudVadThreshold: float = 500.0
         self.openaiApiKey: str = ""
-        self.openaiModel: str = "gpt-4o-transcribe"
+        self.openaiModel: str = "gpt-4o-mini-transcribe"
         self.openaiApiVersion: str = "2025-08-28"
         self.openaiSampleRate: int = 16000
         self.openaiChannels: int = 1
@@ -82,13 +82,6 @@ class Settings:
         self.openaiVadPrefixPaddingMs: int = 300
         self.openaiVadSilenceDurationMs: int = 200
         self.openaiLanguage: str = "en-US"
-        self.geminiApiKey: str = ""
-        self.geminiModel: str = "gemini-2.5-flash"
-        self.geminiLanguageCode: str = "en-US"
-        self.geminiSampleRate: int = 16000
-        self.geminiChannels: int = 1
-        self.geminiVadEnabled: bool = True
-        self.geminiVadThreshold: float = 500.0
 
         # Vosk Local settings
         self.voskModelPath: str = ""
@@ -171,7 +164,7 @@ class Settings:
             "GoogleCloudVadThreshold", 500.0, type=float
         )
         self.openaiApiKey = backend.value("OpenaiApiKey", "", type=str)
-        self.openaiModel = backend.value("OpenaiModel", "gpt-4o-transcribe", type=str)
+        self.openaiModel = backend.value("OpenaiModel", "gpt-4o-mini-transcribe", type=str)
         legacy_session_models = {
             "gpt-4o-realtime-preview": "gpt-4o-transcribe",
             "gpt-4o-mini-realtime-preview": "gpt-4o-mini-transcribe",
@@ -193,13 +186,6 @@ class Settings:
             "OpenaiVadSilenceDurationMs", 200, type=int
         )
         self.openaiLanguage = backend.value("OpenaiLanguage", "en-US", type=str)
-        self.geminiApiKey = backend.value("GeminiApiKey", "", type=str)
-        self.geminiModel = backend.value("GeminiModel", "gemini-2.5-flash", type=str)
-        self.geminiLanguageCode = backend.value("GeminiLanguageCode", "en-US", type=str)
-        self.geminiSampleRate = backend.value("GeminiSampleRate", 16000, type=int)
-        self.geminiChannels = backend.value("GeminiChannels", 1, type=int)
-        self.geminiVadEnabled = backend.value("GeminiVadEnabled", True, type=bool)
-        self.geminiVadThreshold = backend.value("GeminiVadThreshold", 500.0, type=float)
 
         # Vosk Local
         self.voskModelPath = backend.value("VoskModelPath", "", type=str)
@@ -338,7 +324,7 @@ class Settings:
         else:
             backend.setValue("GoogleCloudVadThreshold", self.googleCloudVadThreshold)
         self._set_or_remove("OpenaiApiKey", self.openaiApiKey)
-        if self.openaiModel == "gpt-4o-transcribe":
+        if self.openaiModel == "gpt-4o-mini-transcribe":
             backend.remove("OpenaiModel")
         else:
             backend.setValue("OpenaiModel", self.openaiModel)
@@ -373,28 +359,6 @@ class Settings:
             backend.remove("OpenaiLanguage")
         else:
             backend.setValue("OpenaiLanguage", self.openaiLanguage)
-        self._set_or_remove("GeminiApiKey", self.geminiApiKey)
-        if self.geminiModel == "gemini-2.5-flash":
-            backend.remove("GeminiModel")
-        else:
-            backend.setValue("GeminiModel", self.geminiModel)
-        if self.geminiLanguageCode == "en-US":
-            backend.remove("GeminiLanguageCode")
-        else:
-            backend.setValue("GeminiLanguageCode", self.geminiLanguageCode)
-        if self.geminiSampleRate == 16000:
-            backend.remove("GeminiSampleRate")
-        else:
-            backend.setValue("GeminiSampleRate", self.geminiSampleRate)
-        if self.geminiChannels == 1:
-            backend.remove("GeminiChannels")
-        else:
-            backend.setValue("GeminiChannels", self.geminiChannels)
-        backend.setValue("GeminiVadEnabled", int(self.geminiVadEnabled))
-        if self.geminiVadThreshold == 500.0:
-            backend.remove("GeminiVadThreshold")
-        else:
-            backend.setValue("GeminiVadThreshold", self.geminiVadThreshold)
 
         # Vosk Local
         self._set_or_remove("VoskModelPath", self.voskModelPath)

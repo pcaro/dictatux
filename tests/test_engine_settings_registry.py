@@ -7,7 +7,7 @@ import pytest
 
 # Import all engine modules to register their plugins
 # This must happen before importing from engine_plugin
-from dictatux.engines import whisper, google, openai, gemini, vosk_local, whisper_local
+from dictatux.engines import whisper, google, openai, vosk_local, whisper_local
 
 from dictatux.engine_plugin import (
     get_engine_settings_class,
@@ -27,7 +27,6 @@ def test_get_all_engine_ids_returns_list():
     assert "whisper-docker" in engine_ids
     assert "google-cloud-speech" in engine_ids
     assert "openai-realtime" in engine_ids
-    assert "gemini-live" in engine_ids
 
 
 def test_get_engine_display_name_returns_human_readable():
@@ -35,7 +34,6 @@ def test_get_engine_display_name_returns_human_readable():
     assert get_engine_display_name("whisper-docker") == "Whisper Docker"
     assert get_engine_display_name("google-cloud-speech") == "Google Cloud Speech"
     assert get_engine_display_name("openai-realtime") == "OpenAI Realtime"
-    assert get_engine_display_name("gemini-live") == "Gemini Live API"
 
 
 def test_get_engine_display_name_fallback_for_unknown():
@@ -49,12 +47,10 @@ def test_get_engine_settings_class_returns_dataclass():
     from dictatux.engines.whisper.settings import WhisperSettings
     from dictatux.engines.google.settings import GoogleCloudSettings
     from dictatux.engines.openai.settings import OpenAISettings
-    from dictatux.engines.gemini.settings import GeminiSettings
 
     assert get_engine_settings_class("whisper-docker") == WhisperSettings
     assert get_engine_settings_class("google-cloud-speech") == GoogleCloudSettings
     assert get_engine_settings_class("openai-realtime") == OpenAISettings
-    assert get_engine_settings_class("gemini-live") == GeminiSettings
 
 
 def test_get_engine_settings_class_returns_none_for_unknown():

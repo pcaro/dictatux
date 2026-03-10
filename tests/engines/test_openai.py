@@ -19,7 +19,7 @@ def make_controller(**settings_kwargs) -> OpenAIRealtimeController:
 def test_openai_settings_defaults():
     settings = OpenAISettings()
     assert settings.engine_type == "openai-realtime"
-    assert settings.model == "gpt-4o-transcribe"
+    assert settings.model == "gpt-4o-mini-transcribe"
     assert settings.api_version == "2025-08-28"
     assert settings.sample_rate == 16000
     assert settings.channels == 1
@@ -165,7 +165,7 @@ def test_runner_accepts_latest_transcribe_alias():
     )
 
     assert runner._model == "gpt-4o-transcribe-latest"
-    assert runner._session_model == "gpt-4o-realtime-preview"
+    assert runner._session_model == "gpt-realtime-1.5"
     assert runner._resolve_transcription_model(runner._model) == "gpt-4o-transcribe"
 
 
@@ -178,8 +178,8 @@ def test_runner_fallbacks_for_unsupported_model():
         model="not-a-real-model",
     )
 
-    assert runner._model == "gpt-4o-transcribe"
-    assert runner._session_model == "gpt-4o-realtime-preview"
+    assert runner._model == "gpt-4o-mini-transcribe"
+    assert runner._session_model == "gpt-realtime-1.5-mini"
 
 
 def test_runner_is_not_running_initially():
@@ -229,7 +229,7 @@ def test_settings_openai_fields():
     assert hasattr(settings, 'openaiVadSilenceDurationMs')
 
     # Test defaults
-    assert settings.openaiModel == "gpt-4o-transcribe"
+    assert settings.openaiModel == "gpt-4o-mini-transcribe"
     assert settings.openaiApiVersion == "2025-08-28"
     assert settings.openaiSampleRate == 16000
     assert settings.openaiChannels == 1
