@@ -84,6 +84,7 @@ class Settings:
         self.openaiVadPrefixPaddingMs: int = 300
         self.openaiVadSilenceDurationMs: int = 200
         self.openaiLanguage: str = "en-US"
+        self.openaiUsePartials: bool = False
 
         # Vosk Local settings
         self.voskModelPath: str = ""
@@ -192,6 +193,7 @@ class Settings:
             "OpenaiVadSilenceDurationMs", 200, type=int
         )
         self.openaiLanguage = backend.value("OpenaiLanguage", "en-US", type=str)
+        self.openaiUsePartials = backend.value("OpenaiUsePartials", False, type=bool)
 
         # Vosk Local
         self.voskModelPath = backend.value("VoskModelPath", "", type=str)
@@ -370,6 +372,7 @@ class Settings:
             backend.remove("OpenaiLanguage")
         else:
             backend.setValue("OpenaiLanguage", self.openaiLanguage)
+        backend.setValue("OpenaiUsePartials", int(self.openaiUsePartials))
 
         # Vosk Local
         self._set_or_remove("VoskModelPath", self.voskModelPath)

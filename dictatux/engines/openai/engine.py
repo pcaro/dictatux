@@ -62,6 +62,7 @@ class OpenAIRealtimePlugin(EnginePlugin):
             engine_settings.vad_silence_duration_ms
         )
         app_settings.openaiLanguage = engine_settings.language
+        app_settings.openaiUsePartials = engine_settings.use_partials
 
     def load_settings_from_app(self, app_settings: "Settings") -> OpenAISettings:
         """Create OpenAISettings from application Settings."""
@@ -78,6 +79,7 @@ class OpenAIRealtimePlugin(EnginePlugin):
             vad_prefix_padding_ms=app_settings.openaiVadPrefixPaddingMs,
             vad_silence_duration_ms=app_settings.openaiVadSilenceDurationMs,
             language=app_settings.openaiLanguage,
+            use_partials=app_settings.openaiUsePartials,
         )
 
     def check_availability(self):  # type: ignore[override]

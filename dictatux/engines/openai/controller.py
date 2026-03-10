@@ -19,6 +19,7 @@ from dictatux.base_controller import StreamingControllerBase
 from dictatux.status import DictationStatus
 from dictatux.input_simulator import type_text
 from dictatux.streaming_runner_base import StreamingRunnerBase
+from dictatux.partial_handler import PartialTextHandler
 from .settings import OpenAISettings
 
 
@@ -146,6 +147,7 @@ class OpenAIRealtimeProcessRunner(StreamingRunnerBase):
         vad_threshold: float = 0.5,
         vad_prefix_padding_ms: int = 300,
         vad_silence_duration_ms: int = 200,
+        use_partials: bool = False,
         pulse_device: Optional[str] = None,
         input_simulator: Optional[Callable[[str], None]] = None,
     ) -> None:
@@ -183,6 +185,7 @@ class OpenAIRealtimeProcessRunner(StreamingRunnerBase):
         self._vad_threshold = vad_threshold
         self._vad_prefix_padding_ms = vad_prefix_padding_ms
         self._vad_silence_duration_ms = vad_silence_duration_ms
+        self._use_partials = use_partials
         self._ws_thread: Optional[threading.Thread] = None
         self._ws = None
         self._audio_buffer = bytearray()
@@ -201,8 +204,12 @@ class OpenAIRealtimeProcessRunner(StreamingRunnerBase):
         self._response_active = False
         self._current_response_id: Optional[str] = None
         self._current_transcript: List[str] = []
+        self._current_input_partial: List[str] = []
         self._ws_ready = threading.Event()
         self._ws_failure = threading.Event()
+        self._partial_handler: Optional[PartialTextHandler] = None
+        if self._use_partials:
+            self._partial_handler = PartialTextHandler(self._input_simulator)
 
     def _preflight_checks(self) -> bool:
         if not self._api_key:
@@ -362,14 +369,23 @@ class OpenAIRealtimeProcessRunner(StreamingRunnerBase):
             if msg_type == "conversation.item.input_audio_transcription.completed":
                 # Audio transcription completed
                 transcript = data.get("transcript", "").strip()
+                self._current_input_partial.clear()
                 if transcript:
                     self._controller.transition_to("transcribing")
                     self._controller.emit_transcription(transcript)
-                    self._input_simulator(transcript)
+                    if self._partial_handler:
+                        self._partial_handler.handle_final(transcript)
+                    else:
+                        self._input_simulator(transcript)
 
             elif msg_type == "conversation.item.input_audio_transcription.delta":
                 # Partial transcription
-                pass
+                delta = data.get("delta")
+                if isinstance(delta, str):
+                    self._current_input_partial.append(delta)
+                    if self._partial_handler:
+                        partial_text = "".join(self._current_input_partial)
+                        self._partial_handler.handle_partial(partial_text)
 
             elif msg_type == "response.created":
                 response = data.get("response", {})

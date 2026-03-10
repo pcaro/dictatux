@@ -7,6 +7,7 @@ from dictatux.audio_pipeline import AudioPipeline, AudioCapture, AudioBuffer
 from dictatux.vad_processor import SileroVADProcessor, WebRTCVADProcessor, RMSVADProcessor
 from dictatux.text_formatter import TextFormatter
 from dictatux.input_simulator import type_text
+from dictatux.partial_handler import PartialTextHandler
 
 from .controller import VoskLocalController
 from .settings import VoskLocalSettings
@@ -28,6 +29,7 @@ class VoskLocalRunner:
         self._controller = controller
         self._settings = settings
         self._input_simulator = input_simulator or type_text
+        self._partial_handler = PartialTextHandler(self._input_simulator) if settings.partial_results else None
         
         # Create VAD processor based on settings (handles fallbacks internally)
         vad = self._create_vad()
@@ -146,10 +148,13 @@ class VoskLocalRunner:
     
     def _on_partial(self, text: str) -> None:
         """Callback for partial results."""
-        # Optional: could emit signal for UI tooltip
-        pass
+        if self._partial_handler:
+            self._partial_handler.handle_partial(text)
 
     def _on_transcription(self, text: str) -> None:
         """Callback when a full transcription is available."""
         if text:
-            self._input_simulator(text)
+            if self._partial_handler:
+                self._partial_handler.handle_final(text)
+            else:
+                self._input_simulator(text)

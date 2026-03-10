@@ -133,6 +133,20 @@ class OpenAISettings(EngineSettings):
         },
     )
 
+    use_partials: bool = field(
+        default=False,
+        metadata={
+            "label": "Use Partials",
+            "widget": "checkbox",
+            "tooltip": (
+                "<b>Experimental: Real-time Partials</b><br>"
+                "Show intermediate results as you speak.<br><br>"
+                "<i>Note:</i> Uses backspaces to correct text in real-time. "
+                "Works best in terminals and editors with fast input."
+            ),
+        }
+    )
+
     def __post_init__(self):
         """Validate VAD threshold is between 0 and 1."""
         if not 0.0 <= self.vad_threshold <= 1.0:

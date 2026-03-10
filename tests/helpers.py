@@ -306,6 +306,37 @@ class FakeSignal:
             self.callback(value)
 
 
+class MockInputSimulator:
+    """
+    Mock of input_simulator (type_text/dotool).
+    
+    Records all calls and accumulates the written text, handling backspaces.
+    """
+    
+    def __init__(self) -> None:
+        self.calls: List[str] = []  # List of received texts
+        self._text_list: List[str] = []         # Accumulated text as list of chars
+    
+    @property
+    def text(self) -> str:
+        return "".join(self._text_list)
+
+    def __call__(self, text: str) -> None:
+        """Makes the object callable like a function."""
+        self.calls.append(text)
+        for char in text:
+            if char == "\b":
+                if self._text_list:
+                    self._text_list.pop()
+            else:
+                self._text_list.append(char)
+    
+    def reset(self) -> None:
+        """Clears the state."""
+        self.calls = []
+        self._text_list = []
+
+
 class FakeIPC:
     def __init__(self) -> None:
         self.command_received = FakeSignal()
