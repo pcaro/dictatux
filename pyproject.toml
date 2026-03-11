@@ -84,9 +84,16 @@ dictatux = "dictatux.dictatux:main"
 [tool.setuptools]
 packages = ["dictatux", "dictatux.translations"]
 
+[tool.pytest.ini_options]
+markers = [
+    "slow: marks tests as slow",
+]
+
 [dependency-groups]
 dev = [
     "pytest>=7.4.4",
     "pytest-qt>=4.2.0",
     "numpy",
+    "jiwer>=3.0",
+    "gtts>=2.5.4",
 ]
