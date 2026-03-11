@@ -135,7 +135,9 @@ class STTProcessRunner(ABC):
     """Abstract process runner that manages the STT engine lifecycle."""
 
     @abstractmethod
-    def start(self, command: Sequence[str], env: Optional[Dict[str, str]] = None) -> bool:
+    def start(
+        self, command: Sequence[str], env: Optional[Dict[str, str]] = None
+    ) -> bool:
         """
         Start the STT process with the given command and environment.
 

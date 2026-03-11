@@ -50,12 +50,12 @@ def test_first_audio_detection_logged_with_audio(mock_controller, caplog):
     import io
 
     wav_buffer = io.BytesIO()
-    with wave.open(wav_buffer, 'wb') as wav_file:
+    with wave.open(wav_buffer, "wb") as wav_file:
         wav_file.setnchannels(1)
         wav_file.setsampwidth(2)  # 16-bit
         wav_file.setframerate(16000)
         # Create audio samples with amplitude 1000 (should trigger "audio detected")
-        samples = struct.pack('<100h', *([1000] * 100))
+        samples = struct.pack("<100h", *([1000] * 100))
         wav_file.writeframes(samples)
 
     audio_chunk = wav_buffer.getvalue()
@@ -83,12 +83,12 @@ def test_first_audio_detection_logged_without_audio(mock_controller, caplog):
     import io
 
     wav_buffer = io.BytesIO()
-    with wave.open(wav_buffer, 'wb') as wav_file:
+    with wave.open(wav_buffer, "wb") as wav_file:
         wav_file.setnchannels(1)
         wav_file.setsampwidth(2)
         wav_file.setframerate(16000)
         # Create silent samples
-        samples = struct.pack('<100h', *([0] * 100))
+        samples = struct.pack("<100h", *([0] * 100))
         wav_file.writeframes(samples)
 
     audio_chunk = wav_buffer.getvalue()
@@ -116,11 +116,11 @@ def test_audio_detection_only_logged_once(mock_controller, caplog):
     import io
 
     wav_buffer = io.BytesIO()
-    with wave.open(wav_buffer, 'wb') as wav_file:
+    with wave.open(wav_buffer, "wb") as wav_file:
         wav_file.setnchannels(1)
         wav_file.setsampwidth(2)
         wav_file.setframerate(16000)
-        samples = struct.pack('<100h', *([1000] * 100))
+        samples = struct.pack("<100h", *([1000] * 100))
         wav_file.writeframes(samples)
 
     audio_chunk = wav_buffer.getvalue()
@@ -132,7 +132,11 @@ def test_audio_detection_only_logged_once(mock_controller, caplog):
         runner._log_first_audio_detection(audio_chunk)
 
     # Verify only one log entry was created
-    audio_logs = [r for r in caplog.records if "Audio detected" in r.message or "No audio detected" in r.message]
+    audio_logs = [
+        r
+        for r in caplog.records
+        if "Audio detected" in r.message or "No audio detected" in r.message
+    ]
     assert len(audio_logs) == 1
 
 
@@ -149,11 +153,12 @@ def test_audio_detection_flag_reset_on_new_start(mock_controller):
     runner._audio_detection_logged = True
 
     # Mock the audio recorder and other dependencies
-    with patch.object(runner, '_create_audio_recorder'), \
-         patch.object(runner, '_initialize_connection', return_value=True), \
-         patch.object(runner, '_preflight_checks', return_value=True), \
-         patch('threading.Thread'):  # Prevent thread from actually starting
-
+    with (
+        patch.object(runner, "_create_audio_recorder"),
+        patch.object(runner, "_initialize_connection", return_value=True),
+        patch.object(runner, "_preflight_checks", return_value=True),
+        patch("threading.Thread"),
+    ):  # Prevent thread from actually starting
         # Start should reset the flag
         runner.start([])
 

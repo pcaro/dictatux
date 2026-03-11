@@ -183,15 +183,15 @@ def test_settings_google_cloud_fields():
     settings = Settings()
     settings.load()
 
-    assert hasattr(settings, 'googleCloudCredentialsPath')
-    assert hasattr(settings, 'googleCloudProjectId')
-    assert hasattr(settings, 'googleCloudLocation')
-    assert hasattr(settings, 'googleCloudLanguageCode')
-    assert hasattr(settings, 'googleCloudModel')
-    assert hasattr(settings, 'googleCloudSampleRate')
-    assert hasattr(settings, 'googleCloudChannels')
-    assert hasattr(settings, 'googleCloudVadEnabled')
-    assert hasattr(settings, 'googleCloudVadThreshold')
+    assert hasattr(settings, "googleCloudCredentialsPath")
+    assert hasattr(settings, "googleCloudProjectId")
+    assert hasattr(settings, "googleCloudLocation")
+    assert hasattr(settings, "googleCloudLanguageCode")
+    assert hasattr(settings, "googleCloudModel")
+    assert hasattr(settings, "googleCloudSampleRate")
+    assert hasattr(settings, "googleCloudChannels")
+    assert hasattr(settings, "googleCloudVadEnabled")
+    assert hasattr(settings, "googleCloudVadThreshold")
 
     # Test defaults
     assert settings.googleCloudLocation == "global"

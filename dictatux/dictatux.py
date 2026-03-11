@@ -9,65 +9,21 @@ Created on Wed Jun 16 08:15:47 2021
 """
 
 import sys
-import os
-import re
-import shlex
-import urllib.request, urllib.error
 import logging
 import argparse
 import signal
 from pathlib import Path
-from PySide6.QtGui import QIcon, QStandardItemModel, QStandardItem, QInputMethod
 from PySide6.QtCore import (
-    QCoreApplication,
-    QDir,
     QLibraryInfo,
-    QLocale,
-    QModelIndex,
-    QSettings,
-    QSize,
-    Qt,
     QTranslator,
     QTimer,
-    Slot,
 )
 from PySide6.QtWidgets import (
-    QAbstractItemView,
     QApplication,
-    QCheckBox,
-    QDialog,
-    QDialogButtonBox,
-    QFileDialog,
-    QHBoxLayout,
-    QMenu,
-    QProgressBar,
-    QPushButton,
-    QSizePolicy,
-    QSystemTrayIcon,
-    QTableWidget,
-    QVBoxLayout,
     QWidget,
-    QTableView,
 )
-from subprocess import Popen, run
-from zipfile import ZipFile
-import dictatux.dictatux_rc  # type: ignore
-import dictatux.advanced as advanced  # type: ignore
 from importlib.metadata import version
-from dictatux.settings import DEFAULT_RATE, Settings
-from dictatux.model_repository import (
-    MODEL_GLOBAL_PATH,
-    MODEL_LIST,
-    MODEL_USER_PATH,
-    MODELS_URL,
-    download_model_archive,
-    download_model_list,
-    ensure_user_model_dir,
-    filter_available_models,
-    get_size,
-    load_model_index,
-    model_list_path,
-)
+from dictatux.settings import Settings
 from dictatux.ipc_manager import create_ipc_manager, IPCManager
 from dictatux.utils import get_icon
 
@@ -75,14 +31,10 @@ from dictatux.tray_icon import SystemTrayIcon
 from dictatux.pidfile import remove_pid_file, write_pid_file
 from dictatux.cli import build_parser, choose_ipc_command, handle_model_commands
 
+# Import compiled Qt resources
+import dictatux.dictatux_rc as dictatux_rc  # noqa: F401
+
 # Types.
-from typing import (
-    Any,
-    Tuple,
-    List,
-    Dict,
-    Optional,
-)
 
 
 def setup_signal_handlers(tray_icon):
@@ -269,9 +221,7 @@ def setup_application(app: QApplication) -> None:
     app.setDesktopFileName("Dictatux")
     # don't close application when closing setting window
     app.setQuitOnLastWindowClosed(False)
-    app.setWindowIcon(
-        get_icon("dictatux", ":/icons/dictatux/scalable/dictatux.svg")
-    )
+    app.setWindowIcon(get_icon("dictatux", ":/icons/dictatux/scalable/dictatux.svg"))
 
     settings = Settings()
     settings.load()

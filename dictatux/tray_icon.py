@@ -1,13 +1,12 @@
 from __future__ import annotations
 
 import logging
-import os
 from subprocess import Popen
-from typing import Any, Dict, Optional, Tuple
+from typing import Optional, Tuple
 
 from PySide6.QtCore import QCoreApplication, QTimer
 from PySide6.QtGui import QIcon
-from PySide6.QtWidgets import QApplication, QMenu, QSystemTrayIcon
+from PySide6.QtWidgets import QMenu, QSystemTrayIcon
 
 from dictatux.dialogs import AdvancedUI
 from dictatux.engine_manager import EngineManager
@@ -18,7 +17,7 @@ from dictatux.settings import Settings
 from dictatux.pidfile import remove_pid_file
 from dictatux.icon_factory import IconFactory
 from dictatux.utils import get_icon
-from dictatux.state_machine import DictationStateMachine
+from dictatux.state_machine import DictationStateMachine, IconState
 
 
 class SystemTrayIcon(QSystemTrayIcon):
@@ -257,7 +256,7 @@ class SystemTrayIcon(QSystemTrayIcon):
                     f"Global shortcut registered: {self.settings.beginShortcut} -> begin"
                 )
             else:
-                logging.warning(f"Failed to register global shortcut for 'begin'")
+                logging.warning("Failed to register global shortcut for 'begin'")
 
         # Register end shortcut
         if self.settings.endShortcut:
@@ -269,7 +268,7 @@ class SystemTrayIcon(QSystemTrayIcon):
                     f"Global shortcut registered: {self.settings.endShortcut} -> end"
                 )
             else:
-                logging.warning(f"Failed to register global shortcut for 'end'")
+                logging.warning("Failed to register global shortcut for 'end'")
 
         if self.settings.toggleShortcut:
             success = self.ipc.register_global_shortcut(

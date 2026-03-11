@@ -12,7 +12,6 @@ with multiple implementations (D-Bus, QLocalServer) selected automatically.
 
 import logging
 from abc import ABCMeta, abstractmethod
-from typing import Optional
 from PySide6.QtCore import QObject, Signal
 
 

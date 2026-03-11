@@ -51,7 +51,7 @@ def test_dropdown_with_choices_function(qt_app):
                 "widget": "dropdown",
                 "label": "Device",
                 "choices_function": "tests.test_ui_generator.mock_choices_function",
-            }
+            },
         )
 
     # Create widget from field
@@ -88,7 +88,7 @@ def test_dropdown_with_choices_function_and_kwargs(qt_app):
                 "label": "Device",
                 "choices_function": "tests.test_ui_generator.mock_choices_with_backend",
                 "choices_function_kwargs": {"backend": "backend_a"},
-            }
+            },
         )
 
     test_field = dataclasses.fields(TestSettings)[0]
@@ -112,14 +112,14 @@ def test_refreshable_dropdown_creates_button(qt_app):
                 "label": "Device",
                 "choices_function": "tests.test_ui_generator.mock_choices_function",
                 "refreshable": True,
-            }
+            },
         )
 
     test_field = dataclasses.fields(TestSettings)[0]
     widget = create_widget_from_field(test_field, "val1")
 
     # Should be a container widget with layout
-    assert hasattr(widget, 'layout')
+    assert hasattr(widget, "layout")
     layout = widget.layout()
     assert isinstance(layout, QHBoxLayout)
 
@@ -161,7 +161,7 @@ def test_refresh_button_reloads_choices(qt_app):
                 "label": "Device",
                 "choices_function": "tests.test_ui_generator.mock_choices_function",
                 "refreshable": True,
-            }
+            },
         )
 
     test_field = dataclasses.fields(TestSettings)[0]
@@ -195,10 +195,7 @@ def test_generate_tab_with_choices_function(qt_app):
 
     @dataclass
     class TestSettings:
-        name: str = field(
-            default="test",
-            metadata={"widget": "text", "label": "Name"}
-        )
+        name: str = field(default="test", metadata={"widget": "text", "label": "Name"})
         device: str = field(
             default="val2",
             metadata={
@@ -206,18 +203,18 @@ def test_generate_tab_with_choices_function(qt_app):
                 "label": "Device",
                 "choices_function": "tests.test_ui_generator.mock_choices_function",
                 "refreshable": True,
-            }
+            },
         )
 
     tab = generate_settings_tab(TestSettings)
 
     # Check that widgets_map contains both fields
-    assert hasattr(tab, 'widgets_map')
-    assert 'name' in tab.widgets_map
-    assert 'device' in tab.widgets_map
+    assert hasattr(tab, "widgets_map")
+    assert "name" in tab.widgets_map
+    assert "device" in tab.widgets_map
 
     # Device widget should be the container with refresh button
-    device_widget = tab.widgets_map['device']
+    device_widget = tab.widgets_map["device"]
     layout = device_widget.layout()
     combo = layout.itemAt(0).widget()
 
@@ -226,5 +223,5 @@ def test_generate_tab_with_choices_function(qt_app):
     assert combo.currentData() == "val2"
 
 
-if __name__ == '__main__':
-    pytest.main([__file__, '-v'])
+if __name__ == "__main__":
+    pytest.main([__file__, "-v"])

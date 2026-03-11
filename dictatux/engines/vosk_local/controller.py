@@ -1,4 +1,5 @@
 """Controller for VoskLocal engine."""
+
 from enum import Enum, auto
 from dictatux.base_controller import StreamingControllerBase
 from .settings import VoskLocalSettings
@@ -6,6 +7,7 @@ from .settings import VoskLocalSettings
 
 class VoskLocalState(Enum):
     """States for VoskLocal engine."""
+
     IDLE = auto()
     LOADING = auto()
     READY = auto()
@@ -28,7 +30,7 @@ STATE_MAP = {
 
 class VoskLocalController(StreamingControllerBase[VoskLocalState]):
     """Controller for VoskLocal STT engine."""
-    
+
     def __init__(self, settings: VoskLocalSettings):
         super().__init__(
             initial_state=VoskLocalState.IDLE,
@@ -52,21 +54,30 @@ class VoskLocalController(StreamingControllerBase[VoskLocalState]):
     def handle_exit(self, return_code: int) -> None:
         """Handle process termination (no-op for threaded)."""
         self._emit_exit(return_code)
-    
+
     def get_status_string(self) -> str:
         """Return status string for UI."""
         from pathlib import Path
-        model_name = Path(self._settings.model_path).name if self._settings.model_path else "Not selected"
+
+        model_name = (
+            Path(self._settings.model_path).name
+            if self._settings.model_path
+            else "Not selected"
+        )
         return f"Vosk Local | Model: {model_name}"
-    
+
     @property
     def dictation_status(self):
         """Return generic dictation status."""
         from dictatux.status import DictationStatus
-        
+
         if self.state in (VoskLocalState.LOADING,):
             return DictationStatus.INITIALIZING
-        elif self.state in (VoskLocalState.READY, VoskLocalState.RECORDING, VoskLocalState.TRANSCRIBING):
+        elif self.state in (
+            VoskLocalState.READY,
+            VoskLocalState.RECORDING,
+            VoskLocalState.TRANSCRIBING,
+        ):
             return DictationStatus.LISTENING
         elif self.state == VoskLocalState.SUSPENDED:
             return DictationStatus.SUSPENDED

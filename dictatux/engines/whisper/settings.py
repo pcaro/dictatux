@@ -13,10 +13,7 @@ from dictatux.base_settings import EngineSettings
 class WhisperSettings(EngineSettings):
     """Settings for Whisper Docker engine."""
 
-    engine_type: str = field(
-        default="whisper-docker",
-        metadata={"hidden": True}
-    )
+    engine_type: str = field(default="whisper-docker", metadata={"hidden": True})
 
     model: str = field(
         default="base",
@@ -33,7 +30,7 @@ class WhisperSettings(EngineSettings):
                 "<b>large-v3:</b> Best accuracy, slowest (~1.5 GB)"
             ),
             "options": ["tiny", "base", "small", "medium", "large-v3"],
-        }
+        },
     )
 
     port: int = field(
@@ -47,7 +44,7 @@ class WhisperSettings(EngineSettings):
                 "<i>Default:</i> 9000<br>"
                 "<i>Range:</i> 1-65535"
             ),
-        }
+        },
     )
 
     language: Optional[str] = field(
@@ -61,7 +58,7 @@ class WhisperSettings(EngineSettings):
                 "<i>Examples:</i> en, es, fr, de, it<br>"
                 "<i>Leave empty for auto-detection</i>"
             ),
-        }
+        },
     )
 
     chunk_duration: float = field(
@@ -76,7 +73,7 @@ class WhisperSettings(EngineSettings):
                 "<i>Longer (5-10s):</i> Better context, less overhead<br>"
                 "<i>Default:</i> 5.0 seconds"
             ),
-        }
+        },
     )
 
     sample_rate: int = field(
@@ -85,7 +82,7 @@ class WhisperSettings(EngineSettings):
             "label": "Sample Rate",
             "widget": "text",
             "tooltip": "PCM sample rate forwarded to the Whisper REST service",
-        }
+        },
     )
 
     channels: int = field(
@@ -94,7 +91,7 @@ class WhisperSettings(EngineSettings):
             "label": "Channels",
             "widget": "text",
             "tooltip": "Number of channels to record (Whisper Docker expects mono)",
-        }
+        },
     )
 
     vad_enabled: bool = field(
@@ -108,7 +105,7 @@ class WhisperSettings(EngineSettings):
                 "<i>Enabled:</i> Only send chunks with detected speech<br>"
                 "<i>Disabled:</i> Process all audio chunks"
             ),
-        }
+        },
     )
 
     vad_threshold: float = field(
@@ -124,7 +121,7 @@ class WhisperSettings(EngineSettings):
                 "<i>Higher (700-1000):</i> Filters noise, may miss quiet speech<br>"
                 "<i>Default:</i> 500"
             ),
-        }
+        },
     )
 
     auto_reconnect: bool = field(
@@ -133,7 +130,7 @@ class WhisperSettings(EngineSettings):
             "label": "Auto Reconnect",
             "widget": "checkbox",
             "tooltip": "Automatically restart the container when the REST API stops responding",
-        }
+        },
     )
 
     def __post_init__(self):

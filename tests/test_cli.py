@@ -28,40 +28,124 @@ class FakeSettings(Settings):
 
 class DummyArgs(argparse.Namespace):
     def __init__(self, **kwargs):
-        defaults = dict(list_models=False, set_model=None, exit=False, end=False, begin=False, resume=False, suspend=False, toggle=False)
+        defaults = dict(
+            list_models=False,
+            set_model=None,
+            exit=False,
+            end=False,
+            begin=False,
+            resume=False,
+            suspend=False,
+            toggle=False,
+        )
         defaults.update(kwargs)
         super().__init__(**defaults)
 
 
 def test_handle_model_commands_list_empty(tmp_path):
     settings = FakeSettings()
-    result = handle_model_commands(DummyArgs(list_models=True, set_model=None), settings)
+    result = handle_model_commands(
+        DummyArgs(list_models=True, set_model=None), settings
+    )
     assert result is not None and "No models configured" in result.stdout
 
 
 def test_handle_model_commands_set_model_success(tmp_path):
-    settings = FakeSettings(models=[
-        {"name": "demo", "language": "en", "version": "1", "size": "1", "type": "custom", "location": "/tmp"}
-    ])
-    result = handle_model_commands(DummyArgs(list_models=False, set_model="demo"), settings)
+    settings = FakeSettings(
+        models=[
+            {
+                "name": "demo",
+                "language": "en",
+                "version": "1",
+                "size": "1",
+                "type": "custom",
+                "location": "/tmp",
+            }
+        ]
+    )
+    result = handle_model_commands(
+        DummyArgs(list_models=False, set_model="demo"), settings
+    )
     assert result is not None and result.code == 0
 
 
 def test_handle_model_commands_set_model_failure(tmp_path):
-    settings = FakeSettings(models=[
-        {"name": "demo", "language": "en", "version": "1", "size": "1", "type": "custom", "location": "/tmp"}
-    ])
-    result = handle_model_commands(DummyArgs(list_models=False, set_model="missing"), settings)
+    settings = FakeSettings(
+        models=[
+            {
+                "name": "demo",
+                "language": "en",
+                "version": "1",
+                "size": "1",
+                "type": "custom",
+                "location": "/tmp",
+            }
+        ]
+    )
+    result = handle_model_commands(
+        DummyArgs(list_models=False, set_model="missing"), settings
+    )
     assert result is not None and result.code == 1 and "missing" in result.stderr
 
 
 def test_choose_ipc_command_priority():
-    assert choose_ipc_command(DummyArgs(exit=True, end=False, begin=False, resume=False, suspend=False)) == "exit"
-    assert choose_ipc_command(DummyArgs(exit=False, end=True, begin=False, resume=False, suspend=False)) == "end"
-    assert choose_ipc_command(DummyArgs(exit=False, end=False, begin=True, resume=False, suspend=False)) == "begin"
-    assert choose_ipc_command(DummyArgs(exit=False, end=False, begin=False, resume=True, suspend=False, toggle=False)) == "resume"
-    assert choose_ipc_command(DummyArgs(exit=False, end=False, begin=False, resume=False, suspend=True, toggle=False)) == "suspend"
-    assert choose_ipc_command(DummyArgs(exit=False, end=False, begin=False, resume=False, suspend=False, toggle=True)) == "toggle"
+    assert (
+        choose_ipc_command(
+            DummyArgs(exit=True, end=False, begin=False, resume=False, suspend=False)
+        )
+        == "exit"
+    )
+    assert (
+        choose_ipc_command(
+            DummyArgs(exit=False, end=True, begin=False, resume=False, suspend=False)
+        )
+        == "end"
+    )
+    assert (
+        choose_ipc_command(
+            DummyArgs(exit=False, end=False, begin=True, resume=False, suspend=False)
+        )
+        == "begin"
+    )
+    assert (
+        choose_ipc_command(
+            DummyArgs(
+                exit=False,
+                end=False,
+                begin=False,
+                resume=True,
+                suspend=False,
+                toggle=False,
+            )
+        )
+        == "resume"
+    )
+    assert (
+        choose_ipc_command(
+            DummyArgs(
+                exit=False,
+                end=False,
+                begin=False,
+                resume=False,
+                suspend=True,
+                toggle=False,
+            )
+        )
+        == "suspend"
+    )
+    assert (
+        choose_ipc_command(
+            DummyArgs(
+                exit=False,
+                end=False,
+                begin=False,
+                resume=False,
+                suspend=False,
+                toggle=True,
+            )
+        )
+        == "toggle"
+    )
 
 
 def test_s_flag_alias_for_begin():

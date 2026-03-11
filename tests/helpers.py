@@ -13,6 +13,7 @@ class DummySettings:
 
     def get_engine_settings(self, engine_type: str):
         from dictatux.base_settings import EngineSettings
+
         return EngineSettings(engine_type=engine_type, device_name="default")
 
 
@@ -80,7 +81,9 @@ class HangingRunner(STTProcessRunner):
         self.stop_calls = 0
         self.force_stop_calls = 0
 
-    def start(self, command: Sequence[str], env: Optional[Dict[str, str]] = None) -> bool:
+    def start(
+        self, command: Sequence[str], env: Optional[Dict[str, str]] = None
+    ) -> bool:
         self.running = True
         return True
 
@@ -109,7 +112,9 @@ class AutoStoppingRunner(STTProcessRunner):
         self.running = True
         self.stop_calls = 0
 
-    def start(self, command: Sequence[str], env: Optional[Dict[str, str]] = None) -> bool:
+    def start(
+        self, command: Sequence[str], env: Optional[Dict[str, str]] = None
+    ) -> bool:
         self.running = True
         return True
 
@@ -137,7 +142,9 @@ class DummyRunner(STTProcessRunner):
     def __init__(self) -> None:
         self.running = False
 
-    def start(self, command: Sequence[str], env: Optional[Dict[str, str]] = None) -> bool:
+    def start(
+        self, command: Sequence[str], env: Optional[Dict[str, str]] = None
+    ) -> bool:
         self.running = True
         return True
 
@@ -158,6 +165,7 @@ class DummyRunner(STTProcessRunner):
 
     def is_running(self) -> bool:
         return self.running
+
 
 class FakeState:
     def __init__(self, name: str) -> None:
@@ -309,14 +317,14 @@ class FakeSignal:
 class MockInputSimulator:
     """
     Mock of input_simulator (type_text/dotool).
-    
+
     Records all calls and accumulates the written text, handling backspaces.
     """
-    
+
     def __init__(self) -> None:
         self.calls: List[str] = []  # List of received texts
-        self._text_list: List[str] = []         # Accumulated text as list of chars
-    
+        self._text_list: List[str] = []  # Accumulated text as list of chars
+
     @property
     def text(self) -> str:
         return "".join(self._text_list)
@@ -330,7 +338,7 @@ class MockInputSimulator:
                     self._text_list.pop()
             else:
                 self._text_list.append(char)
-    
+
     def reset(self) -> None:
         """Clears the state."""
         self.calls = []
@@ -362,16 +370,19 @@ class FakeIPC:
 def normalize_text(text: str) -> str:
     """Normalize text for WER calculation."""
     import re
+
     # Lowercase and remove punctuation
     text = text.lower()
-    text = re.sub(r'[^\w\s]', '', text)
+    text = re.sub(r"[^\w\s]", "", text)
     # Remove extra whitespace
-    text = re.sub(r'\s+', ' ', text).strip()
+    text = re.sub(r"\s+", " ", text).strip()
     return text
+
 
 def calculate_wer(reference: str, hypothesis: str) -> float:
     """Calculate Word Error Rate using jiwer."""
     import jiwer
+
     ref_norm = normalize_text(reference)
     hyp_norm = normalize_text(hypothesis)
     if not ref_norm and not hyp_norm:
@@ -379,4 +390,3 @@ def calculate_wer(reference: str, hypothesis: str) -> float:
     if not ref_norm:
         return 1.0
     return jiwer.wer(ref_norm, hyp_norm)
-

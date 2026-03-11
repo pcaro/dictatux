@@ -3,11 +3,8 @@
 
 from __future__ import annotations
 
-import pytest
-
 # Import all engine modules to register their plugins
-# This must happen before importing from engine_plugin
-from dictatux.engines import whisper, google, openai, vosk_local, whisper_local
+from dictatux import engines  # noqa: F401
 
 from dictatux.engine_plugin import (
     get_engine_settings_class,

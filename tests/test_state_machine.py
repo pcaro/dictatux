@@ -1,4 +1,4 @@
-from dictatux.state_machine import DictationStateMachine, IconState
+from dictatux.state_machine import DictationStateMachine
 
 
 def test_toggle_cycle():

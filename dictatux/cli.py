@@ -15,16 +15,39 @@ def build_parser() -> argparse.ArgumentParser:
     )
     parser.add_argument("-l", "--log", help="specify the log level", dest="loglevel")
     parser.add_argument("--version", help="show version and exit", action="store_true")
-    parser.add_argument("-s", "--begin", help="begin dictation (or launch if not running)", action="store_true")
-    parser.add_argument("--end", help="end dictation in running instance", action="store_true")
+    parser.add_argument(
+        "-s",
+        "--begin",
+        help="begin dictation (or launch if not running)",
+        action="store_true",
+    )
+    parser.add_argument(
+        "--end", help="end dictation in running instance", action="store_true"
+    )
     parser.add_argument("--exit", help="exit the running instance", action="store_true")
-    parser.add_argument("--list-models", help="list available models", action="store_true")
-    parser.add_argument("--set-model", help="set the active model by name", metavar="MODEL_NAME")
-    parser.add_argument("--list-engines", help="list available STT engines", action="store_true")
-    parser.add_argument("--use-engine", help="use STT engine for this session only", metavar="ENGINE_NAME")
-    parser.add_argument("--resume", help="resume dictation if suspended", action="store_true")
-    parser.add_argument("--suspend", help="suspend dictation in running instance", action="store_true")
-    parser.add_argument("--toggle", help="toggle dictation (start/suspend/resume)", action="store_true")
+    parser.add_argument(
+        "--list-models", help="list available models", action="store_true"
+    )
+    parser.add_argument(
+        "--set-model", help="set the active model by name", metavar="MODEL_NAME"
+    )
+    parser.add_argument(
+        "--list-engines", help="list available STT engines", action="store_true"
+    )
+    parser.add_argument(
+        "--use-engine",
+        help="use STT engine for this session only",
+        metavar="ENGINE_NAME",
+    )
+    parser.add_argument(
+        "--resume", help="resume dictation if suspended", action="store_true"
+    )
+    parser.add_argument(
+        "--suspend", help="suspend dictation in running instance", action="store_true"
+    )
+    parser.add_argument(
+        "--toggle", help="toggle dictation (start/suspend/resume)", action="store_true"
+    )
     return parser
 
 
@@ -48,11 +71,9 @@ def validate_engine(engine_name: str) -> Optional[CliExit]:
             f"  - {name} ({describe_engine(name)})" for name in AVAILABLE_ENGINES
         )
         message = (
-            f"✗ Engine '{engine_name}' not found\n\n"
-            f"Available engines:\n{available}\n"
+            f"✗ Engine '{engine_name}' not found\n\nAvailable engines:\n{available}\n"
         )
         return CliExit(code=1, stderr=message)
-
 
 
 def handle_engine_commands(args, settings: Settings) -> Optional[CliExit]:
@@ -109,7 +130,9 @@ def handle_model_commands(args, settings: Settings) -> Optional[CliExit]:
                 ),
             )
 
-        current_model = settings.value("Model/name") if settings.contains("Model/name") else ""
+        current_model = (
+            settings.value("Model/name") if settings.contains("Model/name") else ""
+        )
         lines = ["Available models:", "-" * 80]
         for model in settings.models:
             marker = "●" if model["name"] == current_model else " "
@@ -134,8 +157,7 @@ def handle_model_commands(args, settings: Settings) -> Optional[CliExit]:
                 return CliExit(code=0, stdout=f"✓ Model set to '{model_name}'\n")
         available = "\n".join(f"  - {model['name']}" for model in settings.models)
         message = (
-            f"✗ Model '{model_name}' not found\n\n"
-            f"Available models:\n{available}\n"
+            f"✗ Model '{model_name}' not found\n\nAvailable models:\n{available}\n"
         )
         return CliExit(code=1, stderr=message)
 

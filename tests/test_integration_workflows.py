@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import os
-from typing import Callable, List, Optional, Sequence, Tuple
+from typing import List, Tuple
 
 import pytest
 from PySide6.QtCore import QSettings
@@ -10,8 +10,6 @@ from PySide6.QtTest import QTest
 from PySide6.QtWidgets import QApplication
 
 from dictatux.settings import Settings
-from dictatux.stt_engine import STTController, STTProcessRunner
-from dictatux.status import DictationStatus
 from dictatux.tray_icon import SystemTrayIcon
 from tests.helpers import FakeController, FakeIPC, FakeRunner
 

@@ -135,10 +135,7 @@ def create_widget_from_field(field: Field, value: Any) -> QWidget:
             start_dir = line_edit.text() if line_edit.text() else ""
             file_filter = metadata.get("file_filter", "All Files (*)")
             file_path, _ = QFileDialog.getOpenFileName(
-                container,
-                metadata.get("label", "Select File"),
-                start_dir,
-                file_filter
+                container, metadata.get("label", "Select File"), start_dir, file_filter
             )
             if file_path:
                 line_edit.setText(file_path)
@@ -183,11 +180,13 @@ def create_widget_from_field(field: Field, value: Any) -> QWidget:
                     combo.addItem(label, value_to_store)
                 else:
                     combo.addItem(str(option), option)
-                
+
                 if str(option) in option_descriptions:
                     index = combo.count() - 1
                     combo.setItemData(
-                        index, option_descriptions[str(option)], Qt.ItemDataRole.ToolTipRole
+                        index,
+                        option_descriptions[str(option)],
+                        Qt.ItemDataRole.ToolTipRole,
                     )
 
         # Set current value
@@ -421,9 +420,9 @@ def read_settings_from_tab(tab: QWidget, settings_class: Type) -> Any:
                             (t for t in field_type.__args__ if t is not type(None)), str
                         )
 
-                if field_type == int:
+                if field_type is int:
                     values[field.name] = int(text_value) if text_value else 0
-                elif field_type == float:
+                elif field_type is float:
                     values[field.name] = float(text_value) if text_value else 0.0
                 else:
                     values[field.name] = text_value

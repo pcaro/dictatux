@@ -4,7 +4,6 @@
 from __future__ import annotations
 
 import logging
-import os
 import urllib.error
 from pathlib import Path
 from typing import TYPE_CHECKING, List, Optional, Tuple
@@ -12,7 +11,7 @@ from zipfile import ZipFile
 from subprocess import Popen
 
 from PySide6.QtCore import QCoreApplication, QDir, QSize, Qt, QTimer
-from PySide6.QtGui import QIcon, QStandardItem, QStandardItemModel
+from PySide6.QtGui import QStandardItem, QStandardItemModel
 from PySide6.QtWidgets import (
     QAbstractItemView,
     QDialog,

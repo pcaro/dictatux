@@ -6,7 +6,7 @@
 
 QT       += core gui widgets
 
-greaterThan(QT_MAJOR_VERSION, 5): 
+greaterThan(QT_MAJOR_VERSION, 5):
 
 TARGET = dictatux
 TEMPLATE = app
@@ -21,4 +21,4 @@ HEADERS  +=
 TRANSLATIONS     += dictatux/translations/dictatux_en.ts
 TRANSLATIONS     += dictatux/translations/dictatux_es.ts
 
-OTHER_FILES += 
+OTHER_FILES +=

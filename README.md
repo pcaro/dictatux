@@ -274,7 +274,7 @@ GPL-3.0 License - See LICENSE file for details
 ## Authors
 
 - **Pablo Caro** - Author
-- **papoteur** - Idea original. Elograf is a desktop application that provides a graphical interface for launching and configuring nerd-dictation 
+- **papoteur** - Idea original. Elograf is a desktop application that provides a graphical interface for launching and configuring nerd-dictation
 
 ---
 

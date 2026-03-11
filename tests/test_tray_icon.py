@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import os
-from unittest.mock import MagicMock
 
 import pytest
 from PySide6.QtGui import QIcon
@@ -63,7 +62,9 @@ def tray(qt_app):
 
 def test_begin_sets_dictating(tray, monkeypatch):
     tray_icon, _ = tray
-    monkeypatch.setattr(tray_icon.dictation_runner, "start", lambda *args, **kwargs: True)
+    monkeypatch.setattr(
+        tray_icon.dictation_runner, "start", lambda *args, **kwargs: True
+    )
     monkeypatch.setattr(tray_icon, "currentModel", lambda: ("dummy", "/tmp/dummy"))
     tray_icon.begin()
     assert tray_icon.dictating is True
@@ -91,8 +92,12 @@ def test_suspend_and_resume_toggle(tray, monkeypatch):
     tray_icon.state_machine.set_ready()
     monkeypatch.setattr(tray_icon.dictation_runner, "is_running", lambda: True)
     calls = []
-    monkeypatch.setattr(tray_icon.dictation_runner, "suspend", lambda: calls.append("suspend"))
-    monkeypatch.setattr(tray_icon.dictation_runner, "resume", lambda: calls.append("resume"))
+    monkeypatch.setattr(
+        tray_icon.dictation_runner, "suspend", lambda: calls.append("suspend")
+    )
+    monkeypatch.setattr(
+        tray_icon.dictation_runner, "resume", lambda: calls.append("resume")
+    )
 
     tray_icon.suspend()
     assert tray_icon.suspended is True
@@ -106,15 +111,19 @@ def test_commute_toggles(tray, monkeypatch):
     tray_icon.direct_click_enabled = True
     actions = []
     assert tray_icon.toggleAction.text() == "Start dictation"
+
     def fake_begin():
         actions.append("begin")
         tray_icon.state_machine.set_ready()
+
     def fake_suspend():
         actions.append("suspend")
         tray_icon.state_machine.set_suspended()
+
     def fake_resume():
         actions.append("resume")
         tray_icon.state_machine.set_ready()
+
     monkeypatch.setattr(tray_icon, "begin", fake_begin)
     monkeypatch.setattr(tray_icon, "suspend", fake_suspend)
     monkeypatch.setattr(tray_icon, "resume", fake_resume)
@@ -149,21 +158,26 @@ def test_tooltip_updates_with_model(tray, monkeypatch):
     assert "Model:" in tooltip_lines[1]
     assert " a" in tooltip_lines[1]
 
+
 def test_toggle_cycles_states(tray, monkeypatch):
     tray_icon, _ = tray
     sequence = []
     monkeypatch.setattr(tray_icon, "begin", lambda: sequence.append("begin"))
     monkeypatch.setattr(tray_icon, "suspend", lambda: sequence.append("suspend"))
     monkeypatch.setattr(tray_icon, "resume", lambda: sequence.append("resume"))
+
     def fake_begin():
         sequence.append("begin")
         tray_icon.state_machine.set_loading()
+
     def fake_suspend():
         sequence.append("suspend")
         tray_icon.state_machine.set_suspended()
+
     def fake_resume():
         sequence.append("resume")
         tray_icon.state_machine.set_ready()
+
     monkeypatch.setattr(tray_icon, "begin", fake_begin)
     monkeypatch.setattr(tray_icon, "suspend", fake_suspend)
     monkeypatch.setattr(tray_icon, "resume", fake_resume)
@@ -211,7 +225,7 @@ def test_stop_action_behavior(tray):
 
 def test_no_redundant_actions_in_menu(tray):
     tray_icon, _ = tray
-    # Verify suspendAction and resumeAction are no longer as attributes 
+    # Verify suspendAction and resumeAction are no longer as attributes
     # (meaning they weren't created/added in __init__)
     assert not hasattr(tray_icon, "suspendAction")
     assert not hasattr(tray_icon, "resumeAction")

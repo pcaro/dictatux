@@ -65,7 +65,7 @@ class WhisperLocalPlugin(EnginePlugin):
 
     def check_availability(self):
         try:
-            import faster_whisper
+            import faster_whisper  # noqa: F401
         except ImportError:
             return (
                 False,
@@ -73,8 +73,8 @@ class WhisperLocalPlugin(EnginePlugin):
             )
 
         try:
-            import torch
-            import silero_vad
+            import torch  # noqa: F401
+            import silero_vad  # noqa: F401
         except ImportError:
             return (
                 False,

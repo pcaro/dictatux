@@ -12,10 +12,7 @@ from dictatux.base_settings import EngineSettings
 class GoogleCloudSettings(EngineSettings):
     """Settings for Google Cloud Speech-to-Text engine."""
 
-    engine_type: str = field(
-        default="google-cloud-speech",
-        metadata={"hidden": True}
-    )
+    engine_type: str = field(default="google-cloud-speech", metadata={"hidden": True})
 
     credentials_path: str = field(
         default="",
@@ -31,7 +28,7 @@ class GoogleCloudSettings(EngineSettings):
                 "2. Create key → Download JSON<br>"
                 "3. Set path to the downloaded file"
             ),
-        }
+        },
     )
 
     project_id: str = field(
@@ -40,7 +37,7 @@ class GoogleCloudSettings(EngineSettings):
             "label": "Project ID",
             "widget": "text",
             "tooltip": "GCP project identifier; leave empty to auto-detect from credentials",
-        }
+        },
     )
 
     location: str = field(
@@ -64,7 +61,7 @@ class GoogleCloudSettings(EngineSettings):
                 "<b>us/eu:</b> Multi-region (recommended for chirp_3)<br>"
                 "<b>Regional:</b> Specific regional endpoints"
             ),
-        }
+        },
     )
 
     language_code: str = field(
@@ -73,7 +70,7 @@ class GoogleCloudSettings(EngineSettings):
             "label": "Language Code",
             "widget": "text",
             "tooltip": "Primary BCP-47 language code (e.g. en-US, es-ES)",
-        }
+        },
     )
 
     model: str = field(
@@ -97,7 +94,7 @@ class GoogleCloudSettings(EngineSettings):
                 "<b>long:</b> Optimized for long-form audio<br>"
                 "<b>short:</b> Optimized for short utterances"
             ),
-        }
+        },
     )
 
     sample_rate: int = field(
@@ -106,7 +103,7 @@ class GoogleCloudSettings(EngineSettings):
             "label": "Sample Rate",
             "widget": "text",
             "tooltip": "Sample rate in Hz for audio sent to the gRPC stream",
-        }
+        },
     )
 
     channels: int = field(
@@ -115,7 +112,7 @@ class GoogleCloudSettings(EngineSettings):
             "label": "Channels",
             "widget": "text",
             "tooltip": "Number of audio channels (must match recorder configuration)",
-        }
+        },
     )
 
     vad_enabled: bool = field(
@@ -124,7 +121,7 @@ class GoogleCloudSettings(EngineSettings):
             "label": "VAD Enabled",
             "widget": "checkbox",
             "tooltip": "Enable voice activity detection when streaming audio",
-        }
+        },
     )
 
     vad_threshold: float = field(
@@ -133,7 +130,7 @@ class GoogleCloudSettings(EngineSettings):
             "label": "VAD Threshold",
             "widget": "text",
             "tooltip": "RMS loudness threshold used when VAD is enabled",
-        }
+        },
     )
 
     use_partials: bool = field(
@@ -147,7 +144,7 @@ class GoogleCloudSettings(EngineSettings):
                 "<i>Note:</i> Uses backspaces to correct text in real-time. "
                 "Works best in terminals and editors with fast input."
             ),
-        }
+        },
     )
 
     def __post_init__(self):

@@ -5,7 +5,6 @@ from __future__ import annotations
 
 import os
 import tempfile
-import pytest
 
 
 def test_validate_command_exists_with_valid_command():

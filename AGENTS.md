@@ -152,7 +152,7 @@ To add a new language or update existing translations:
    ```bash
    # Using Docker (recommended, no system dependencies)
    ./update_translations.sh
-   
+
    # Or using local Qt tools if installed
    ./.venv/lib/python3.12/site-packages/qt6_applications/Qt/bin/lupdate dictatux/ -ts dictatux/translations/*.ts
    ```

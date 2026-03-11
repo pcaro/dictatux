@@ -6,12 +6,11 @@ from __future__ import annotations
 import io
 import logging
 import tempfile
-import threading
 import time
 from enum import Enum, auto
 from pathlib import Path
 from subprocess import run, CalledProcessError
-from typing import Callable, Dict, List, Optional
+from typing import Callable, Optional
 
 import requests
 
@@ -100,7 +99,11 @@ class WhisperDockerController(StreamingControllerBase[WhisperDockerState]):
     def dictation_status(self) -> DictationStatus:
         if self.state == WhisperDockerState.STARTING:
             return DictationStatus.INITIALIZING
-        elif self.state in (WhisperDockerState.READY, WhisperDockerState.RECORDING, WhisperDockerState.TRANSCRIBING):
+        elif self.state in (
+            WhisperDockerState.READY,
+            WhisperDockerState.RECORDING,
+            WhisperDockerState.TRANSCRIBING,
+        ):
             return DictationStatus.LISTENING
         elif self.state == WhisperDockerState.SUSPENDED:
             return DictationStatus.SUSPENDED
@@ -188,7 +191,14 @@ class WhisperDockerProcessRunner(StreamingRunnerBase):
     def _is_container_running(self) -> bool:
         try:
             result = run(
-                ["docker", "ps", "--filter", f"name={self._container_name}", "--format", "{{.Names}}"],
+                [
+                    "docker",
+                    "ps",
+                    "--filter",
+                    f"name={self._container_name}",
+                    "--format",
+                    "{{.Names}}",
+                ],
                 capture_output=True,
                 text=True,
                 check=True,
@@ -201,7 +211,13 @@ class WhisperDockerProcessRunner(StreamingRunnerBase):
         """Get the model that the container is currently configured with."""
         try:
             result = run(
-                ["docker", "inspect", "--format", "{{range .Config.Env}}{{println .}}{{end}}", self._container_name],
+                [
+                    "docker",
+                    "inspect",
+                    "--format",
+                    "{{range .Config.Env}}{{println .}}{{end}}",
+                    self._container_name,
+                ],
                 capture_output=True,
                 text=True,
                 check=True,
@@ -230,12 +246,24 @@ class WhisperDockerProcessRunner(StreamingRunnerBase):
                     current_model,
                     self._model,
                 )
-                run(["docker", "stop", self._container_name], check=False, capture_output=True)
+                run(
+                    ["docker", "stop", self._container_name],
+                    check=False,
+                    capture_output=True,
+                )
                 run(["docker", "rm", self._container_name], check=True)
 
             else:
                 result = run(
-                    ["docker", "ps", "-a", "--filter", f"name={self._container_name}", "--format", "{{.Names}}"],
+                    [
+                        "docker",
+                        "ps",
+                        "-a",
+                        "--filter",
+                        f"name={self._container_name}",
+                        "--format",
+                        "{{.Names}}",
+                    ],
                     capture_output=True,
                     text=True,
                     check=True,
@@ -263,16 +291,27 @@ class WhisperDockerProcessRunner(StreamingRunnerBase):
             )
             return False
 
-        logging.info(f"Starting Whisper Docker container '{self._container_name}' with model '{self._model}'...")
+        logging.info(
+            f"Starting Whisper Docker container '{self._container_name}' with model '{self._model}'..."
+        )
         try:
-            run([
-                "docker", "run", "-d",
-                "--name", self._container_name,
-                "-p", f"{self._api_port}:9000",
-                "-e", f"ASR_MODEL={self._model}",
-                "-e", "ASR_ENGINE=openai_whisper",
-                "onerahmet/openai-whisper-asr-webservice:latest",
-            ], check=True)
+            run(
+                [
+                    "docker",
+                    "run",
+                    "-d",
+                    "--name",
+                    self._container_name,
+                    "-p",
+                    f"{self._api_port}:9000",
+                    "-e",
+                    f"ASR_MODEL={self._model}",
+                    "-e",
+                    "ASR_ENGINE=openai_whisper",
+                    "onerahmet/openai-whisper-asr-webservice:latest",
+                ],
+                check=True,
+            )
             return True
         except (CalledProcessError, FileNotFoundError) as exc:
             logging.error("Failed to start Docker container: %s", exc)
@@ -287,9 +326,13 @@ class WhisperDockerProcessRunner(StreamingRunnerBase):
 
         while time.time() - start_time < timeout:
             try:
-                response = requests.get(f"http://localhost:{self._api_port}/docs", timeout=2)
+                response = requests.get(
+                    f"http://localhost:{self._api_port}/docs", timeout=2
+                )
                 if response.status_code == 200:
-                    logging.info("Whisper API web UI reachable, verifying health endpoint...")
+                    logging.info(
+                        "Whisper API web UI reachable, verifying health endpoint..."
+                    )
                     try:
                         health = requests.get(
                             f"http://localhost:{self._api_port}/health",
@@ -300,9 +343,14 @@ class WhisperDockerProcessRunner(StreamingRunnerBase):
                             return True
                         elif health.status_code in (404, 405, 501):
                             return True
-                            logging.debug("Health endpoint not ready yet: %s", health.status_code)
+                            logging.debug(
+                                "Health endpoint not ready yet: %s", health.status_code
+                            )
                     except requests.RequestException as exc:
-                        logging.debug("Health endpoint check failed (%s), assuming not ready yet", exc)
+                        logging.debug(
+                            "Health endpoint check failed (%s), assuming not ready yet",
+                            exc,
+                        )
             except requests.RequestException:
                 pass
             time.sleep(1)
@@ -318,17 +366,17 @@ class WhisperDockerProcessRunner(StreamingRunnerBase):
         try:
             # Parse WAV data
             wav_buffer = io.BytesIO(audio_data)
-            with wave.open(wav_buffer, 'rb') as wav_file:
+            with wave.open(wav_buffer, "rb") as wav_file:
                 frames = wav_file.readframes(wav_file.getnframes())
 
             # Calculate RMS
             sample_width = 2  # 16-bit audio
-            samples = struct.unpack(f'<{len(frames) // sample_width}h', frames)
-            rms = (sum(s ** 2 for s in samples) / len(samples)) ** 0.5
+            samples = struct.unpack(f"<{len(frames) // sample_width}h", frames)
+            rms = (sum(s**2 for s in samples) / len(samples)) ** 0.5
             return rms
         except Exception as exc:
             logging.warning(f"Error calculating audio level: {exc}")
-            return float('inf')  # Return high value to pass VAD on error
+            return float("inf")  # Return high value to pass VAD on error
 
     def _transcribe_audio(self, audio_data: bytes) -> str:
         max_retries = 3 if self._auto_reconnect else 1
@@ -336,7 +384,9 @@ class WhisperDockerProcessRunner(StreamingRunnerBase):
         for attempt in range(max_retries):
             try:
                 # Save audio to temporary file
-                with tempfile.NamedTemporaryFile(suffix=".wav", delete=False) as tmp_file:
+                with tempfile.NamedTemporaryFile(
+                    suffix=".wav", delete=False
+                ) as tmp_file:
                     tmp_file.write(audio_data)
                     tmp_path = tmp_file.name
 
@@ -354,7 +404,9 @@ class WhisperDockerProcessRunner(StreamingRunnerBase):
                             attempt + 1,
                             max_retries,
                         )
-                        response = requests.post(self._api_url, files=files, params=params, timeout=120)
+                        response = requests.post(
+                            self._api_url, files=files, params=params, timeout=120
+                        )
                         response.raise_for_status()
 
                         result = response.json()
@@ -378,7 +430,9 @@ class WhisperDockerProcessRunner(StreamingRunnerBase):
                         if self._start_container() and self._wait_for_api():
                             continue
                 else:
-                    logging.error(f"Transcription failed after {max_retries} attempts: {exc}")
+                    logging.error(
+                        f"Transcription failed after {max_retries} attempts: {exc}"
+                    )
             except Exception as exc:
                 logging.error(f"Transcription error: {exc}")
                 break

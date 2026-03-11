@@ -4,15 +4,13 @@ import os
 import threading
 import time
 from datetime import datetime, timedelta
-from typing import Dict, Optional, Sequence, Tuple
+from typing import Tuple
 
 import pytest
 from PySide6.QtCore import QCoreApplication, QThread
 from PySide6.QtWidgets import QApplication
 
 from dictatux.engine_manager import EngineManager
-from dictatux.status import DictationStatus
-from dictatux.stt_engine import STTController, STTProcessRunner
 from tests.helpers import (
     AutoStoppingRunner,
     DummyController,

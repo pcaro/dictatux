@@ -108,4 +108,6 @@ dev = [
     "numpy",
     "jiwer>=3.0",
     "gtts>=2.5.4",
+    "pre-commit>=4.5.1",
+    "ruff>=0.15.5",
 ]
