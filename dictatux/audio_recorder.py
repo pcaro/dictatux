@@ -26,7 +26,12 @@ def _get_pulseaudio_sources() -> List[Tuple[str, str]]:
     """
     # Try JSON output for robust parsing
     try:
-        result = run(["pactl", "-f", "json", "list", "sources"], capture_output=True, text=True, timeout=5)
+        result = run(
+            ["pactl", "-f", "json", "list", "sources"],
+            capture_output=True,
+            text=True,
+            timeout=5,
+        )
         if result.returncode == 0 and result.stdout.strip():
             try:
                 data = json.loads(result.stdout)
@@ -34,7 +39,11 @@ def _get_pulseaudio_sources() -> List[Tuple[str, str]]:
                 for src in data or []:
                     name = src.get("name") or ""
                     props = src.get("properties", {}) or {}
-                    desc = props.get("node.description") or props.get("device.description") or name
+                    desc = (
+                        props.get("node.description")
+                        or props.get("device.description")
+                        or name
+                    )
                     if name:
                         if name.endswith(".monitor") and "monitor" not in desc.lower():
                             desc = f"{desc} (monitor)"
@@ -48,7 +57,9 @@ def _get_pulseaudio_sources() -> List[Tuple[str, str]]:
 
     # Fallback to text parsing of `pactl list sources`
     try:
-        result = run(["pactl", "list", "sources"], capture_output=True, text=True, timeout=5)
+        result = run(
+            ["pactl", "list", "sources"], capture_output=True, text=True, timeout=5
+        )
         if result.returncode == 0 and result.stdout:
             sources: List[Tuple[str, str]] = []
             current_name: Optional[str] = None
@@ -58,7 +69,10 @@ def _get_pulseaudio_sources() -> List[Tuple[str, str]]:
                 line = raw.strip()
                 if line.startswith("Source #"):
                     if current_name and current_desc:
-                        if current_name.endswith(".monitor") and "monitor" not in current_desc.lower():
+                        if (
+                            current_name.endswith(".monitor")
+                            and "monitor" not in current_desc.lower()
+                        ):
                             current_desc = f"{current_desc} (monitor)"
                         sources.append((current_name, current_desc))
                     current_name, current_desc = None, None
@@ -69,13 +83,21 @@ def _get_pulseaudio_sources() -> List[Tuple[str, str]]:
                     current_desc = line.split(":", 1)[1].strip()
                 elif line.startswith("Properties:"):
                     props_mode = True
-                elif props_mode and "node.description" in line and "=" in line and not current_desc:
+                elif (
+                    props_mode
+                    and "node.description" in line
+                    and "=" in line
+                    and not current_desc
+                ):
                     try:
                         current_desc = line.split("=", 1)[1].strip().strip('"')
                     except Exception:
                         pass
             if current_name and current_desc:
-                if current_name.endswith(".monitor") and "monitor" not in current_desc.lower():
+                if (
+                    current_name.endswith(".monitor")
+                    and "monitor" not in current_desc.lower()
+                ):
                     current_desc = f"{current_desc} (monitor)"
                 sources.append((current_name, current_desc))
             if sources:
@@ -85,7 +107,12 @@ def _get_pulseaudio_sources() -> List[Tuple[str, str]]:
 
     # Last resort: short listing
     try:
-        result = run(["pactl", "list", "sources", "short"], capture_output=True, text=True, timeout=5)
+        result = run(
+            ["pactl", "list", "sources", "short"],
+            capture_output=True,
+            text=True,
+            timeout=5,
+        )
         if result.returncode == 0 and result.stdout:
             sources: List[Tuple[str, str]] = []
             for line in result.stdout.splitlines():
@@ -300,12 +327,12 @@ class ParecBackend(AudioBackend):
         while len(data) < size:
             if getattr(self, "_closed", False):
                 raise EOFError("Audio recording is closed")
-                
+
             chunk = self._parec.stdout.read(size - len(data))
             if not chunk:
                 if getattr(self, "_closed", False):
                     raise EOFError("Audio recording is closed")
-                
+
                 # Check if it was killed by a signal (e.g. SIGINT from terminal) or exited cleanly (code 0)
                 retcode = self._parec.poll()
                 if retcode is None:
@@ -315,15 +342,21 @@ class ParecBackend(AudioBackend):
                         retcode = self._parec.poll()
                     except Exception:
                         pass
-                
-                if retcode is not None and (retcode <= 0 or retcode == 130 or retcode == 143):
+
+                if retcode is not None and (
+                    retcode <= 0 or retcode == 130 or retcode == 143
+                ):
                     # 130 is 128 + SIGINT, 143 is 128 + SIGTERM (standard shell termination codes)
                     # 0 is clean exit (which parec might do on SIGINT)
-                    logging.debug(f"parec process ended with code {retcode}, stopping read.")
+                    logging.debug(
+                        f"parec process ended with code {retcode}, stopping read."
+                    )
                     raise EOFError(f"parec process terminated (code {retcode})")
-                    
+
                 # try to restart
-                logging.warning(f"parec process ended unexpectedly (code {retcode}), restarting")
+                logging.warning(
+                    f"parec process ended unexpectedly (code {retcode}), restarting"
+                )
                 self._restart_parec()
                 continue
             data += chunk
@@ -342,7 +375,9 @@ class ParecBackend(AudioBackend):
     def read_chunk(self, duration: float) -> bytes:
         """Read audio chunk and return as WAV bytes."""
         # Calculate bytes needed for requested duration
-        bytes_needed = int(self._sample_rate * duration) * self._channels * self._sample_width
+        bytes_needed = (
+            int(self._sample_rate * duration) * self._channels * self._sample_width
+        )
 
         # Ensure minimum chunk size (0.1 seconds)
         min_bytes = self._sample_rate * self._channels * self._sample_width // 10

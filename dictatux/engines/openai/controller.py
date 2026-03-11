@@ -4,15 +4,10 @@
 from __future__ import annotations
 
 import base64
-import io
 import json
 import logging
-import shutil
-import subprocess
 import threading
-import time
 from enum import Enum, auto
-from subprocess import PIPE, Popen, CalledProcessError, run
 from typing import Callable, Dict, List, Optional
 
 from dictatux.base_controller import StreamingControllerBase

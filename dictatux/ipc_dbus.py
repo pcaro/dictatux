@@ -12,9 +12,9 @@ KGlobalAccel for global keyboard shortcuts.
 
 import logging
 import subprocess
-from typing import Dict, Callable, List, Optional
+from typing import Callable, List, Optional
 from PySide6.QtCore import Slot, Qt
-from PySide6.QtDBus import QDBusConnection, QDBusInterface, QDBusReply
+from PySide6.QtDBus import QDBusConnection, QDBusInterface
 from dictatux.ipc_manager import IPCManager
 
 
@@ -300,7 +300,7 @@ class IPCDBus(IPCManager):
         )
 
         # Use setShortcut (not setForeignShortcut) to mark component as active
-        logging.debug(f"[KGlobalAccel] Using setShortcut with combined key")
+        logging.debug("[KGlobalAccel] Using setShortcut with combined key")
         try:
             result = subprocess.run(
                 [
@@ -323,20 +323,20 @@ class IPCDBus(IPCManager):
                 logging.error(f"[KGlobalAccel] setShortcut failed: {result.stderr}")
                 return False
 
-            logging.debug(f"[KGlobalAccel] setShortcut successful")
+            logging.debug("[KGlobalAccel] setShortcut successful")
             logging.debug(f"[KGlobalAccel] Response: {result.stdout.strip()}")
         except subprocess.TimeoutExpired:
-            logging.error(f"[KGlobalAccel] dbus-send timed out")
+            logging.error("[KGlobalAccel] dbus-send timed out")
             return False
         except FileNotFoundError:
-            logging.error(f"[KGlobalAccel] dbus-send not found - install dbus package")
+            logging.error("[KGlobalAccel] dbus-send not found - install dbus package")
             return False
         except Exception as e:
             logging.error(f"[KGlobalAccel] dbus-send error: {e}")
             return False
 
         # Call doRegister to activate the shortcut monitoring
-        logging.debug(f"[KGlobalAccel] Calling doRegister to activate shortcut")
+        logging.debug("[KGlobalAccel] Calling doRegister to activate shortcut")
         try:
             result = subprocess.run(
                 [
@@ -360,7 +360,7 @@ class IPCDBus(IPCManager):
                 logging.debug(
                     f"[KGlobalAccel] doRegister returned: {result.stdout.strip()}"
                 )
-                logging.debug(f"[KGlobalAccel] doRegister successful")
+                logging.debug("[KGlobalAccel] doRegister successful")
         except Exception as e:
             logging.warning(f"[KGlobalAccel] doRegister error: {e}")
             # Don't fail completely - continue with registration
@@ -388,7 +388,7 @@ class IPCDBus(IPCManager):
                 )
 
                 if result.returncode == 0:
-                    logging.debug(f"[KGlobalAccel] Context activated successfully")
+                    logging.debug("[KGlobalAccel] Context activated successfully")
                     self._context_activated = True
                 else:
                     logging.warning(
@@ -423,7 +423,7 @@ class IPCDBus(IPCManager):
                 f"[KGlobalAccel] Connecting to signal on path: {component_path}"
             )
             logging.debug(
-                f"[KGlobalAccel] Signal details: service='org.kde.kglobalaccel', interface='org.kde.kglobalaccel.Component', signal='globalShortcutPressed'"
+                "[KGlobalAccel] Signal details: service='org.kde.kglobalaccel', interface='org.kde.kglobalaccel.Component', signal='globalShortcutPressed'"
             )
 
             # Try connecting with explicit match rule
@@ -438,7 +438,7 @@ class IPCDBus(IPCManager):
             if connection_success:
                 self._signal_connected = True
                 logging.debug(
-                    f"[KGlobalAccel] Successfully connected to globalShortcutPressed signal"
+                    "[KGlobalAccel] Successfully connected to globalShortcutPressed signal"
                 )
                 logging.debug(
                     f"[KGlobalAccel] Waiting for signals... (callback registered for: {list(self.shortcuts.keys())})"
@@ -449,7 +449,7 @@ class IPCDBus(IPCManager):
                     f"[KGlobalAccel] Failed to connect to globalShortcutPressed signal: {error}"
                 )
         else:
-            logging.debug(f"[KGlobalAccel] Already connected to signal, skipping")
+            logging.debug("[KGlobalAccel] Already connected to signal, skipping")
             logging.debug(
                 f"[KGlobalAccel] Registered callbacks: {list(self.shortcuts.keys())}"
             )
@@ -478,7 +478,7 @@ class IPCDBus(IPCManager):
             logging.debug(f"[KGlobalAccel] Executing callback for '{unique_name}'")
             try:
                 callback()
-                logging.debug(f"[KGlobalAccel] Callback executed successfully")
+                logging.debug("[KGlobalAccel] Callback executed successfully")
             except Exception as e:
                 logging.error(f"[KGlobalAccel] Callback error: {e}")
         else:

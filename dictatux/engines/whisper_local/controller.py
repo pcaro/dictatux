@@ -1,4 +1,5 @@
 """Controller for WhisperLocal engine."""
+
 from enum import Enum, auto
 from dictatux.base_controller import StreamingControllerBase
 from .settings import WhisperLocalSettings
@@ -6,6 +7,7 @@ from .settings import WhisperLocalSettings
 
 class WhisperLocalState(Enum):
     """States for WhisperLocal engine."""
+
     IDLE = auto()
     DOWNLOADING_MODEL = auto()
     LOADING = auto()
@@ -30,7 +32,7 @@ STATE_MAP = {
 
 class WhisperLocalController(StreamingControllerBase[WhisperLocalState]):
     """Controller for WhisperLocal STT engine."""
-    
+
     def __init__(self, settings: WhisperLocalSettings):
         super().__init__(
             initial_state=WhisperLocalState.IDLE,
@@ -54,19 +56,26 @@ class WhisperLocalController(StreamingControllerBase[WhisperLocalState]):
     def handle_exit(self, return_code: int) -> None:
         """Handle process termination."""
         self._emit_exit(return_code)
-    
+
     def get_status_string(self) -> str:
         """Return status string for UI."""
         return f"Whisper Local | Model: {self._settings.model_size}"
-    
+
     @property
     def dictation_status(self):
         """Return generic dictation status."""
         from dictatux.status import DictationStatus
-        
-        if self.state in (WhisperLocalState.DOWNLOADING_MODEL, WhisperLocalState.LOADING):
+
+        if self.state in (
+            WhisperLocalState.DOWNLOADING_MODEL,
+            WhisperLocalState.LOADING,
+        ):
             return DictationStatus.INITIALIZING
-        elif self.state in (WhisperLocalState.READY, WhisperLocalState.RECORDING, WhisperLocalState.TRANSCRIBING):
+        elif self.state in (
+            WhisperLocalState.READY,
+            WhisperLocalState.RECORDING,
+            WhisperLocalState.TRANSCRIBING,
+        ):
             return DictationStatus.LISTENING
         elif self.state == WhisperLocalState.SUSPENDED:
             return DictationStatus.SUSPENDED

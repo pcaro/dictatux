@@ -8,10 +8,9 @@ import logging
 import os
 import queue
 import threading
-import time
 from enum import Enum, auto
 from pathlib import Path
-from typing import Callable, Dict, List, Optional
+from typing import Callable, Optional
 
 from dictatux.base_controller import StreamingControllerBase
 from dictatux.status import DictationStatus
@@ -99,9 +98,16 @@ class GoogleCloudSpeechController(StreamingControllerBase[GoogleCloudSpeechState
 
     @property
     def dictation_status(self) -> DictationStatus:
-        if self.state in (GoogleCloudSpeechState.STARTING, GoogleCloudSpeechState.CONNECTING):
+        if self.state in (
+            GoogleCloudSpeechState.STARTING,
+            GoogleCloudSpeechState.CONNECTING,
+        ):
             return DictationStatus.INITIALIZING
-        elif self.state in (GoogleCloudSpeechState.READY, GoogleCloudSpeechState.RECORDING, GoogleCloudSpeechState.TRANSCRIBING):
+        elif self.state in (
+            GoogleCloudSpeechState.READY,
+            GoogleCloudSpeechState.RECORDING,
+            GoogleCloudSpeechState.TRANSCRIBING,
+        ):
             return DictationStatus.LISTENING
         elif self.state == GoogleCloudSpeechState.SUSPENDED:
             return DictationStatus.SUSPENDED
@@ -224,7 +230,9 @@ class GoogleCloudSpeechProcessRunner(StreamingRunnerBase):
         )
 
         self._audio_queue = queue.Queue()
-        self._response_thread = threading.Thread(target=self._response_loop, daemon=True)
+        self._response_thread = threading.Thread(
+            target=self._response_loop, daemon=True
+        )
         self._response_thread.start()
         self._controller.set_ready()
         return True
@@ -261,7 +269,9 @@ class GoogleCloudSpeechProcessRunner(StreamingRunnerBase):
 
     def _resolve_recognizer_name(self) -> str:
         if self._project_id:
-            return f"projects/{self._project_id}/locations/{self._location}/recognizers/_"
+            return (
+                f"projects/{self._project_id}/locations/{self._location}/recognizers/_"
+            )
 
         from google.auth import default
 
@@ -290,7 +300,7 @@ class GoogleCloudSpeechProcessRunner(StreamingRunnerBase):
                 break
             if self._stop_event.is_set():
                 break
-            
+
             try:
                 # Wait for a chunk with a timeout to avoid starving the stream
                 chunk = self._audio_queue.get(timeout=5.0)
@@ -306,7 +316,9 @@ class GoogleCloudSpeechProcessRunner(StreamingRunnerBase):
             return
 
         try:
-            responses = self._client.streaming_recognize(requests=self._request_generator())
+            responses = self._client.streaming_recognize(
+                requests=self._request_generator()
+            )
             for response in responses:
                 if self._stop_event.is_set():
                     break
@@ -317,7 +329,7 @@ class GoogleCloudSpeechProcessRunner(StreamingRunnerBase):
                     if result.is_final:
                         if transcript.strip():
                             self._controller.emit_transcription(transcript)
-                        
+
                         if self._partial_handler:
                             self._partial_handler.handle_final(transcript)
                         elif transcript.strip():
@@ -338,16 +350,16 @@ class GoogleCloudSpeechProcessRunner(StreamingRunnerBase):
 
         try:
             wav_buffer = io.BytesIO(audio_data)
-            with wave.open(wav_buffer, 'rb') as wav_file:
+            with wave.open(wav_buffer, "rb") as wav_file:
                 frames = wav_file.readframes(wav_file.getnframes())
 
             sample_width = 2  # 16-bit audio
-            samples = struct.unpack(f'<{len(frames) // sample_width}h', frames)
-            rms = (sum(s ** 2 for s in samples) / len(samples)) ** 0.5
+            samples = struct.unpack(f"<{len(frames) // sample_width}h", frames)
+            rms = (sum(s**2 for s in samples) / len(samples)) ** 0.5
             return rms
         except Exception as exc:
             logging.warning(f"Error calculating audio level: {exc}")
-            return float('inf')
+            return float("inf")
 
     def _extract_raw_audio(self, wav_data: bytes) -> bytes:
         """Extract raw PCM audio from WAV file (skip 44-byte header)."""

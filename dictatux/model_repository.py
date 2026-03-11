@@ -45,7 +45,9 @@ def load_model_index(base: Path | None = None) -> List[dict]:
         return ujson.load(handle)
 
 
-Fetcher = Callable[[str, str | None, Callable[[int, int, int], None] | None], Tuple[str, object]]
+Fetcher = Callable[
+    [str, str | None, Callable[[int, int, int], None] | None], Tuple[str, object]
+]
 
 
 def download_model_list(
@@ -69,6 +71,12 @@ def download_model_archive(
     return local_path
 
 
-def filter_available_models(remote_models: Iterable[dict], installed_names: Iterable[str]) -> List[dict]:
+def filter_available_models(
+    remote_models: Iterable[dict], installed_names: Iterable[str]
+) -> List[dict]:
     installed_set = set(installed_names)
-    return [model for model in remote_models if model.get("name") not in installed_set and model.get("obsolete") != "true"]
+    return [
+        model
+        for model in remote_models
+        if model.get("name") not in installed_set and model.get("obsolete") != "true"
+    ]

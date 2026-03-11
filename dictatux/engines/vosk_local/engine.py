@@ -66,13 +66,13 @@ class VoskLocalPlugin(EnginePlugin):
 
     def check_availability(self):
         try:
-            import vosk
+            import vosk  # noqa: F401
         except ImportError:
             return False, "vosk not installed. Run: pip install vosk"
 
         try:
-            import torch
-            import silero_vad
+            import torch  # noqa: F401
+            import silero_vad  # noqa: F401
         except ImportError:
             return (
                 False,

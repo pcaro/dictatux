@@ -39,7 +39,7 @@ class PartialTextHandler:
         new_suffix = transcript[prefix_len:]
         if new_suffix:
             self._input_simulator(new_suffix)
-            
+
         self._last_partial = transcript
 
     def handle_final(self, transcript: str) -> None:
@@ -51,7 +51,7 @@ class PartialTextHandler:
             return
 
         prefix_len = self._get_prefix_length(self._last_partial, transcript)
-        
+
         backspaces_needed = len(self._last_partial) - prefix_len
         if backspaces_needed > 0:
             self._input_simulator("\b" * backspaces_needed)

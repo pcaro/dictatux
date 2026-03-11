@@ -144,7 +144,7 @@ class OpenAISettings(EngineSettings):
                 "<i>Note:</i> Uses backspaces to correct text in real-time. "
                 "Works best in terminals and editors with fast input."
             ),
-        }
+        },
     )
 
     def __post_init__(self):

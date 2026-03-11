@@ -3,9 +3,17 @@ from __future__ import annotations
 import sys
 from unittest.mock import MagicMock, patch
 
-import pytest
 
 from dictatux import dictatux
+from PySide6.QtCore import QFile
+
+
+def test_resources_are_loaded():
+    """Verify that the compiled Qt resources are available."""
+    # This check ensures that dictatux_rc was imported and registered correctly
+    assert QFile.exists(":/icons/dictatux/scalable/dictatux.svg")
+    assert QFile.exists(":/icons/dictatux/24/micro.png")
+    assert QFile.exists(":/icons/dictatux/24/nomicro.png")
 
 
 @patch("dictatux.dictatux.choose_ipc_command")
@@ -65,7 +73,9 @@ def test_send_command_to_running_instance_failure(mock_handle_model, mock_choose
     with patch("builtins.print") as mock_print, patch("sys.exit") as mock_exit:
         dictatux.handle_cli_commands_and_exit_if_needed(args, mock_ipc)
         mock_ipc.send_command.assert_called_with("begin")
-        mock_print.assert_called_with("✗ Failed to send 'begin' command", file=sys.stderr)
+        mock_print.assert_called_with(
+            "✗ Failed to send 'begin' command", file=sys.stderr
+        )
         mock_exit.assert_called_with(1)
 
 
@@ -96,7 +106,9 @@ def test_command_with_no_running_instance(mock_handle_model, mock_choose_ipc):
 
 @patch("dictatux.dictatux.choose_ipc_command")
 @patch("dictatux.dictatux.handle_model_commands")
-def test_begin_command_with_no_running_instance_continues(mock_handle_model, mock_choose_ipc):
+def test_begin_command_with_no_running_instance_continues(
+    mock_handle_model, mock_choose_ipc
+):
     """Verify that the 'begin' command does not exit if no instance is running."""
     # Arrange
     mock_ipc = MagicMock()

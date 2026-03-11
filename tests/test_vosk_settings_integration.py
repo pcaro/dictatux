@@ -1,6 +1,5 @@
 """Tests for VoskLocal settings integration with Settings class."""
 
-import pytest
 from unittest.mock import MagicMock, patch
 
 
@@ -43,8 +42,8 @@ def test_settings_vosk_defaults():
         assert settings.voskVadThreshold == 0.5
         assert settings.voskSilenceTimeoutMs == 500
         assert settings.voskSampleRate == 16000
-        assert settings.voskPartialResults == False
-        assert settings.voskTextFormatting == True
+        assert not settings.voskPartialResults
+        assert settings.voskTextFormatting
         assert settings.voskLocale == "en_US"
         assert settings.voskMaxQueueDepth == 3
 
@@ -71,11 +70,11 @@ def test_settings_load_vosk_config():
             }
             if key in values:
                 val = values[key]
-                if type == bool:
+                if type is bool:
                     return bool(val)
-                elif type == int:
+                elif type is int:
                     return int(val)
-                elif type == float:
+                elif type is float:
                     return float(val)
                 return val
             return default
@@ -92,8 +91,8 @@ def test_settings_load_vosk_config():
         assert settings.voskVadThreshold == 0.7
         assert settings.voskSilenceTimeoutMs == 750
         assert settings.voskSampleRate == 8000
-        assert settings.voskPartialResults == True
-        assert settings.voskTextFormatting == False
+        assert settings.voskPartialResults
+        assert not settings.voskTextFormatting
         assert settings.voskLocale == "es_ES"
         assert settings.voskMaxQueueDepth == 5
 
@@ -153,7 +152,6 @@ def test_get_engine_settings_returns_vosk_settings():
 def test_get_engine_settings_vosk_all_properties():
     """get_engine_settings() debe mapear todas las propiedades Vosk."""
     from dictatux.settings import Settings
-    from dictatux.engines.vosk_local.settings import VoskLocalSettings
 
     with patch("dictatux.settings.QSettings") as mock_qsettings:
         mock_backend = MagicMock()
@@ -181,8 +179,8 @@ def test_get_engine_settings_vosk_all_properties():
         assert engine_settings.vad_threshold == 0.8
         assert engine_settings.silence_timeout_ms == 600
         assert engine_settings.sample_rate == 8000
-        assert engine_settings.partial_results == True
-        assert engine_settings.text_formatting == False
+        assert engine_settings.partial_results
+        assert not engine_settings.text_formatting
         assert engine_settings.locale == "fr_FR"
         assert engine_settings.max_queue_depth == 5
 
@@ -255,8 +253,8 @@ def test_vosk_plugin_apply_to_settings():
         assert settings.voskVadThreshold == 0.9
         assert settings.voskSilenceTimeoutMs == 700
         assert settings.voskSampleRate == 22050
-        assert settings.voskPartialResults == True
-        assert settings.voskTextFormatting == False
+        assert settings.voskPartialResults
+        assert not settings.voskTextFormatting
         assert settings.voskLocale == "de_DE"
         assert settings.voskMaxQueueDepth == 7
 
@@ -324,7 +322,6 @@ def test_vosk_engine_creation_via_factory():
     """El motor Vosk debe poder crearse via stt_factory con Settings."""
     from dictatux.settings import Settings
     from dictatux.stt_factory import create_stt_engine
-    from dictatux.engines.vosk_local.settings import VoskLocalSettings
     from dictatux.engines.vosk_local.controller import VoskLocalController
     from dictatux.engines.vosk_local.runner import VoskLocalRunner
 
@@ -356,7 +353,6 @@ def test_vosk_roundtrip_settings():
     """Test completo: Settings -> VoskLocalSettings -> apply -> Settings."""
     from dictatux.settings import Settings
     from dictatux.engines.vosk_local.engine import VoskLocalPlugin
-    from dictatux.engines.vosk_local.settings import VoskLocalSettings
 
     with patch("dictatux.settings.QSettings") as mock_qsettings:
         mock_backend = MagicMock()

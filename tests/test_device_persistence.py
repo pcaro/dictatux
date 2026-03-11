@@ -27,7 +27,9 @@ def test_device_combobox_has_data_set(qt_app):
     dialog = AdvancedUI(settings)
 
     # Verify combobox has items
-    assert dialog.ui.deviceName.count() > 0, "deviceName combobox should have at least one item"
+    assert dialog.ui.deviceName.count() > 0, (
+        "deviceName combobox should have at least one item"
+    )
 
     # Verify each item has data set (not None)
     for i in range(dialog.ui.deviceName.count()):
@@ -75,5 +77,6 @@ def test_device_selection_persists_via_dialog(qt_app, tmp_path):
     settings2 = Settings(QSettings(str(settings_file), QSettings.Format.IniFormat))
     settings2.load()
 
-    assert settings2.deviceName == test_device, \
+    assert settings2.deviceName == test_device, (
         f"Expected deviceName to be '{test_device}', but got '{settings2.deviceName}'"
+    )

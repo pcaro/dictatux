@@ -218,15 +218,15 @@ def test_settings_openai_fields():
     settings = Settings()
     settings.load()
 
-    assert hasattr(settings, 'openaiApiKey')
-    assert hasattr(settings, 'openaiModel')
-    assert hasattr(settings, 'openaiApiVersion')
-    assert hasattr(settings, 'openaiSampleRate')
-    assert hasattr(settings, 'openaiChannels')
-    assert hasattr(settings, 'openaiVadEnabled')
-    assert hasattr(settings, 'openaiVadThreshold')
-    assert hasattr(settings, 'openaiVadPrefixPaddingMs')
-    assert hasattr(settings, 'openaiVadSilenceDurationMs')
+    assert hasattr(settings, "openaiApiKey")
+    assert hasattr(settings, "openaiModel")
+    assert hasattr(settings, "openaiApiVersion")
+    assert hasattr(settings, "openaiSampleRate")
+    assert hasattr(settings, "openaiChannels")
+    assert hasattr(settings, "openaiVadEnabled")
+    assert hasattr(settings, "openaiVadThreshold")
+    assert hasattr(settings, "openaiVadPrefixPaddingMs")
+    assert hasattr(settings, "openaiVadSilenceDurationMs")
 
     # Test defaults
     assert settings.openaiModel == "gpt-4o-mini-transcribe"

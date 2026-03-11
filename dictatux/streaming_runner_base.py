@@ -120,7 +120,9 @@ class StreamingRunnerBase(STTProcessRunner, ABC):
                     continue
 
                 try:
-                    audio_chunk = self._audio_recorder.record_chunk(self._chunk_duration)
+                    audio_chunk = self._audio_recorder.record_chunk(
+                        self._chunk_duration
+                    )
                 except EOFError:
                     logging.debug("StreamingRunner: recording closed or stopped")
                     break
@@ -183,8 +185,9 @@ class StreamingRunnerBase(STTProcessRunner, ABC):
 
             # Calculate RMS (root mean square) audio level
             import struct
+
             samples = struct.unpack(f"<{len(raw_audio) // 2}h", raw_audio)
-            rms = (sum(s ** 2 for s in samples) / len(samples)) ** 0.5 if samples else 0.0
+            rms = (sum(s**2 for s in samples) / len(samples)) ** 0.5 if samples else 0.0
 
             if rms > 100:  # Basic threshold to detect any audio
                 logging.info(f"Audio detected: RMS level = {rms:.1f}")

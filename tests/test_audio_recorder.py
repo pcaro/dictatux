@@ -6,10 +6,11 @@
 ABOUTME: Tests for audio recorder module including device enumeration
 ABOUTME: Validates audio device discovery with backend-specific behavior
 """
+
 from __future__ import annotations
 
 import unittest
-from unittest.mock import patch, MagicMock
+from unittest.mock import patch
 from subprocess import CompletedProcess
 
 from dictatux.audio_recorder import get_audio_devices
@@ -33,12 +34,12 @@ Source #1
 	Sample Specification: float32le 2ch 48000Hz
 """
 
-        with patch('dictatux.audio_recorder.run') as mock_run:
+        with patch("dictatux.audio_recorder.run") as mock_run:
             mock_run.return_value = CompletedProcess(
-                args=['pactl', 'list', 'sources'],
+                args=["pactl", "list", "sources"],
                 returncode=0,
                 stdout=mock_output,
-                stderr=''
+                stderr="",
             )
 
             devices = get_audio_devices(backend="parec")
@@ -51,7 +52,9 @@ Source #1
             self.assertEqual(devices[0][1], "Default")
 
             # Then the actual devices
-            self.assertEqual(devices[1][0], "alsa_output.pci-0000_00_1b.0.analog-stereo.monitor")
+            self.assertEqual(
+                devices[1][0], "alsa_output.pci-0000_00_1b.0.analog-stereo.monitor"
+            )
             self.assertEqual(devices[1][1], "Monitor of Built-in Audio Analog Stereo")
             self.assertEqual(devices[2][0], "alsa_input.pci-0000_00_1b.0.analog-stereo")
             self.assertEqual(devices[2][1], "Built-in Audio Analog Stereo")
@@ -71,14 +74,16 @@ Source #1
 	Name: test_device
 	Description: Test Device
 """
-        with patch('dictatux.audio_recorder.shutil.which') as mock_which, \
-             patch('dictatux.audio_recorder.run') as mock_run:
+        with (
+            patch("dictatux.audio_recorder.shutil.which") as mock_which,
+            patch("dictatux.audio_recorder.run") as mock_run,
+        ):
             mock_which.return_value = "/usr/bin/pactl"
             mock_run.return_value = CompletedProcess(
-                args=['pactl', 'list', 'sources'],
+                args=["pactl", "list", "sources"],
                 returncode=0,
                 stdout=mock_output,
-                stderr=''
+                stderr="",
             )
 
             devices = get_audio_devices(backend="auto")
@@ -89,7 +94,7 @@ Source #1
 
     def test_auto_backend_without_pactl(self):
         """Test that auto backend falls back to pyaudio when pactl unavailable."""
-        with patch('dictatux.audio_recorder.shutil.which') as mock_which:
+        with patch("dictatux.audio_recorder.shutil.which") as mock_which:
             mock_which.return_value = None
 
             devices = get_audio_devices(backend="auto")
@@ -100,12 +105,12 @@ Source #1
 
     def test_pactl_failure_returns_only_default(self):
         """Test that pactl failure returns only default option."""
-        with patch('dictatux.audio_recorder.run') as mock_run:
+        with patch("dictatux.audio_recorder.run") as mock_run:
             mock_run.return_value = CompletedProcess(
-                args=['pactl', 'list', 'sources'],
+                args=["pactl", "list", "sources"],
                 returncode=1,
-                stdout='',
-                stderr='Connection failed'
+                stdout="",
+                stderr="Connection failed",
             )
 
             devices = get_audio_devices(backend="parec")
@@ -116,12 +121,12 @@ Source #1
 
     def test_pactl_timeout_returns_only_default(self):
         """Test that pactl timeout returns only default option."""
-        with patch('dictatux.audio_recorder.run', side_effect=TimeoutError):
+        with patch("dictatux.audio_recorder.run", side_effect=TimeoutError):
             devices = get_audio_devices(backend="parec")
 
             self.assertEqual(len(devices), 1)
             self.assertEqual(devices[0][0], "default")
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()

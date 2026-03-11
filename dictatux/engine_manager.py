@@ -6,7 +6,7 @@ from __future__ import annotations
 import logging
 from datetime import datetime, timedelta
 from enum import Enum
-from typing import Any, Callable, Dict, List, Optional, Tuple
+from typing import Callable, Dict, List, Optional, Tuple
 
 from PySide6.QtCore import QObject, Qt, QTimer, Signal, Slot
 

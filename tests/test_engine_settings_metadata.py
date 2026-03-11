@@ -4,7 +4,6 @@
 from __future__ import annotations
 
 import dataclasses
-import pytest
 
 
 def test_whisper_settings_metadata():

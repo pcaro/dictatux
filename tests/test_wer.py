@@ -1,11 +1,12 @@
-import pytest
 from tests.helpers import calculate_wer, normalize_text
+
 
 def test_normalize_text():
     assert normalize_text("Hello, World!") == "hello world"
     assert normalize_text("  Extra   spaces  ") == "extra spaces"
     assert normalize_text("NoPunctuation") == "nopunctuation"
     assert normalize_text("It's a test.") == "its a test"
+
 
 def test_calculate_wer():
     # Identical

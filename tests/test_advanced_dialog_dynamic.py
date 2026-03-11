@@ -150,7 +150,9 @@ def test_retranslate_preserves_dynamic_tab_values_and_no_info_icon_duplication(q
             if not item:
                 continue
             widget = item.widget()
-            if widget is not None and getattr(widget, "_dictatux_info_container", False):
+            if widget is not None and getattr(
+                widget, "_dictatux_info_container", False
+            ):
                 count += 1
         return count
 

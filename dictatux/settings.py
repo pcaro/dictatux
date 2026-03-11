@@ -1,8 +1,7 @@
 from __future__ import annotations
 
-import logging
 import os
-from typing import Dict, List, Optional, Union
+from typing import Dict, List, Optional
 
 from PySide6.QtCore import QSettings
 
@@ -152,7 +151,9 @@ class Settings:
             "GoogleCloudCredentialsPath", "", type=str
         )
         self.googleCloudProjectId = backend.value("GoogleCloudProjectId", "", type=str)
-        self.googleCloudLocation = backend.value("GoogleCloudLocation", "global", type=str)
+        self.googleCloudLocation = backend.value(
+            "GoogleCloudLocation", "global", type=str
+        )
         self.googleCloudLanguageCode = backend.value(
             "GoogleCloudLanguageCode", "en-US", type=str
         )
@@ -171,7 +172,9 @@ class Settings:
             "GoogleCloudUsePartials", False, type=bool
         )
         self.openaiApiKey = backend.value("OpenaiApiKey", "", type=str)
-        self.openaiModel = backend.value("OpenaiModel", "gpt-4o-mini-transcribe", type=str)
+        self.openaiModel = backend.value(
+            "OpenaiModel", "gpt-4o-mini-transcribe", type=str
+        )
         legacy_session_models = {
             "gpt-4o-realtime-preview": "gpt-4o-transcribe",
             "gpt-4o-mini-realtime-preview": "gpt-4o-mini-transcribe",

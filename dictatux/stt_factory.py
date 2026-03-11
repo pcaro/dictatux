@@ -17,7 +17,7 @@ from dictatux.base_settings import EngineSettings
 from dictatux.stt_engine import STTController, STTProcessRunner
 
 # Ensure built-in engines are registered on import
-from dictatux import engines as _builtin_engines  # noqa: F401
+from . import engines as _builtin_engines  # noqa: F401
 
 
 def _instantiate_settings(plugin: EnginePlugin, **kwargs) -> EngineSettings:
@@ -37,7 +37,9 @@ def _instantiate_settings(plugin: EnginePlugin, **kwargs) -> EngineSettings:
     return schema(**schema_kwargs)  # type: ignore[call-arg]
 
 
-def create_stt_engine(engine_type: str = "vosk-local", **kwargs) -> Tuple[STTController, STTProcessRunner]:
+def create_stt_engine(
+    engine_type: str = "vosk-local", **kwargs
+) -> Tuple[STTController, STTProcessRunner]:
     """Create controller and runner for the specified engine via its plugin."""
     plugin = get_plugin(engine_type)
     settings_obj = _instantiate_settings(plugin, **kwargs)

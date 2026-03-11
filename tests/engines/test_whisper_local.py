@@ -1,8 +1,7 @@
 """Integration tests for WhisperLocal engine."""
 
 import time
-import pytest
-from unittest.mock import Mock, patch, MagicMock
+from unittest.mock import patch, MagicMock
 
 
 def test_whisper_local_plugin_registration():
@@ -52,12 +51,8 @@ def test_whisper_local_full_lifecycle():
         patch(
             "dictatux.engines.whisper_local.runner.AudioPipeline"
         ) as mock_pipeline_class,
-        patch(
-            "dictatux.engines.whisper_local.runner.AudioCapture"
-        ) as mock_capture_class,
-        patch(
-            "dictatux.engines.whisper_local.runner.SileroVADProcessor"
-        ) as mock_vad_class,
+        patch("dictatux.engines.whisper_local.runner.AudioCapture"),
+        patch("dictatux.engines.whisper_local.runner.SileroVADProcessor"),
     ):
         mock_backend = MagicMock()
         mock_backend.is_loaded = False  # Initially not loaded

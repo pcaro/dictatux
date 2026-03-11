@@ -1,8 +1,7 @@
 """Tests for VAD processors."""
 
 import pytest
-import numpy as np
-from unittest.mock import Mock, patch
+from unittest.mock import patch
 
 
 def test_vad_result_enum():
@@ -82,7 +81,7 @@ def test_silero_vad_processor_exists():
     from dictatux.vad_processor import SileroVADProcessor
 
     # Mock del modelo para no cargar torch en tests
-    with patch.object(SileroVADProcessor, "_load_model") as mock_load:
+    with patch.object(SileroVADProcessor, "_load_model"):
         vad = SileroVADProcessor(threshold=0.5)
         assert vad is not None
 
@@ -91,12 +90,12 @@ def test_webrtc_vad_processor_exists():
     """WebRTCVADProcessor debe existir y ser instanciable."""
     try:
         from dictatux.vad_processor import WebRTCVADProcessor
-        import webrtcvad
+        import webrtcvad  # noqa: F401
     except (ImportError, ModuleNotFoundError):
         pytest.skip(
             "webrtcvad not available or failing to import (common on some environments)"
         )
 
-    with patch("webrtcvad.Vad") as mock_vad:
+    with patch("webrtcvad.Vad"):
         vad = WebRTCVADProcessor(aggressiveness=2)
         assert vad is not None

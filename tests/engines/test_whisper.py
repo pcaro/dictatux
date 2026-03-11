@@ -108,8 +108,8 @@ def test_controller_handle_exit():
     assert exit_codes == [0, 1]
 
 
-@patch('dictatux.engines.whisper.controller.run')
-@patch('dictatux.engines.whisper.controller.requests')
+@patch("dictatux.engines.whisper.controller.run")
+@patch("dictatux.engines.whisper.controller.requests")
 def test_runner_start_container_not_running(mock_requests, mock_run):
     controller = make_controller()
     runner = WhisperDockerProcessRunner(controller, container_name="test-whisper")
@@ -127,7 +127,7 @@ def test_runner_start_container_not_running(mock_requests, mock_run):
     assert controller.state == WhisperDockerState.READY
 
 
-@patch('dictatux.engines.whisper.controller.run')
+@patch("dictatux.engines.whisper.controller.run")
 def test_runner_is_container_running(mock_run):
     controller = make_controller()
     runner = WhisperDockerProcessRunner(controller, container_name="test-whisper")
@@ -135,12 +135,12 @@ def test_runner_is_container_running(mock_run):
     # Mock container is running
     mock_run.return_value = Mock(stdout="test-whisper\n", returncode=0)
 
-    assert runner._is_container_running() == True
+    assert runner._is_container_running()
 
     # Mock container not running
     mock_run.return_value = Mock(stdout="", returncode=0)
 
-    assert runner._is_container_running() == False
+    assert not runner._is_container_running()
 
 
 def test_runner_stop():

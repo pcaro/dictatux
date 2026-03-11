@@ -1,19 +1,18 @@
 """Settings for WhisperLocal engine."""
+
 import dataclasses
 from dataclasses import dataclass
-from typing import Optional
 from dictatux.base_settings import EngineSettings
 
 
 @dataclass
 class WhisperLocalSettings(EngineSettings):
     """Configuration for WhisperLocal STT engine."""
-    
+
     engine_type: str = dataclasses.field(
-        default="whisper-local",
-        metadata={"hidden": True}
+        default="whisper-local", metadata={"hidden": True}
     )
-    
+
     # Model settings
     model_size: str = dataclasses.field(
         default="base",
@@ -38,9 +37,9 @@ class WhisperLocalSettings(EngineSettings):
                 "<li><b>large-v3:</b> Maximum accuracy, requires GPU with 8GB+ VRAM (~1.5 GB)</li>"
                 "</ul>"
             ),
-        }
+        },
     )
-    
+
     language: str = dataclasses.field(
         default="auto",
         metadata={
@@ -52,9 +51,9 @@ class WhisperLocalSettings(EngineSettings):
                 "<i>Examples:</i> en, es, fr, de, it<br>"
                 "<i>Leave empty or use 'auto' for automatic detection</i>"
             ),
-        }
+        },
     )
-    
+
     device: str = dataclasses.field(
         default="auto",
         metadata={
@@ -73,9 +72,9 @@ class WhisperLocalSettings(EngineSettings):
                 "<li><b>cpu:</b> Use CPU (slower but works on all systems)</li>"
                 "</ul>"
             ),
-        }
+        },
     )
-    
+
     compute_type: str = dataclasses.field(
         default="auto",
         metadata={
@@ -96,9 +95,9 @@ class WhisperLocalSettings(EngineSettings):
                 "<li><b>float32:</b> Maximum precision, but slower (full precision)</li>"
                 "</ul>"
             ),
-        }
+        },
     )
-    
+
     # VAD settings
     vad_threshold: float = dataclasses.field(
         default=0.5,
@@ -113,9 +112,9 @@ class WhisperLocalSettings(EngineSettings):
                 "<i>Higher (0.7-0.9):</i> Filters noise, may miss quiet speech<br>"
                 "<i>Default:</i> 0.5"
             ),
-        }
+        },
     )
-    
+
     # Context settings
     context_limit_chars: int = dataclasses.field(
         default=100,
@@ -129,9 +128,9 @@ class WhisperLocalSettings(EngineSettings):
                 "<i>Lower values:</i> Less memory usage, faster processing<br>"
                 "<i>Maximum:</i> 100 characters"
             ),
-        }
+        },
     )
-    
+
     auto_reset_context: bool = dataclasses.field(
         default=True,
         metadata={
@@ -143,9 +142,9 @@ class WhisperLocalSettings(EngineSettings):
                 "<i>Enabled:</i> Fresh start after pauses (recommended)<br>"
                 "<i>Disabled:</i> Context persists until manually reset"
             ),
-        }
+        },
     )
-    
+
     reset_context_action: str = dataclasses.field(
         default="",
         repr=False,
@@ -158,9 +157,9 @@ class WhisperLocalSettings(EngineSettings):
                 "<i>Use when:</i> Changing topics, starting a new paragraph, "
                 "or when transcription quality degrades"
             ),
-        }
+        },
     )
-    
+
     # Text formatting
     locale: str = dataclasses.field(
         default="en_US",
@@ -172,9 +171,9 @@ class WhisperLocalSettings(EngineSettings):
                 "BCP-47 locale code for number and text formatting.<br><br>"
                 "<i>Examples:</i> en_US, es_ES, fr_FR, de_DE"
             ),
-        }
+        },
     )
-    
+
     # Performance
     max_queue_depth: int = dataclasses.field(
         default=2,
@@ -188,5 +187,5 @@ class WhisperLocalSettings(EngineSettings):
                 "<i>Lower values:</i> Less memory usage, more responsive<br>"
                 "<i>Default:</i> 2"
             ),
-        }
+        },
     )

@@ -9,6 +9,7 @@ from dictatux.status import DictationStatus
 
 class SampleState(Enum):
     """Sample state enum for controller testing."""
+
     IDLE = auto()
     RECORDING = auto()
     SUSPENDED = auto()
@@ -100,7 +101,7 @@ class TestStreamingControllerBase(unittest.TestCase):
         """resume_requested() should set _suspended to False."""
         controller = SampleStreamingController()
         controller.suspend_requested()  # First suspend
-        controller.resume_requested()    # Then resume
+        controller.resume_requested()  # Then resume
 
         self.assertFalse(controller.is_suspended)
 
@@ -111,7 +112,7 @@ class TestStreamingControllerBase(unittest.TestCase):
         controller.add_state_listener(lambda s: states.append(s))
 
         controller.suspend_requested()  # First suspend
-        controller.resume_requested()    # Then resume
+        controller.resume_requested()  # Then resume
 
         self.assertEqual(controller.state, SampleState.RECORDING)
         self.assertIn(SampleState.RECORDING, states)

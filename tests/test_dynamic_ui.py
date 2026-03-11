@@ -6,7 +6,7 @@ from __future__ import annotations
 import os
 import dataclasses
 import pytest
-from PySide6.QtWidgets import QApplication, QLineEdit, QCheckBox, QComboBox, QSlider, QPushButton
+from PySide6.QtWidgets import QApplication, QLineEdit, QCheckBox, QComboBox, QPushButton
 
 
 @pytest.fixture(scope="module")
@@ -28,8 +28,7 @@ def test_create_text_widget_from_metadata(qt_app):
     @dataclass
     class TestSettings:
         test_field: str = field(
-            default="default_value",
-            metadata={"label": "Test Field", "widget": "text"}
+            default="default_value", metadata={"label": "Test Field", "widget": "text"}
         )
 
     fields = dataclasses.fields(TestSettings)
@@ -50,8 +49,7 @@ def test_create_password_widget_from_metadata(qt_app):
     @dataclass
     class TestSettings:
         api_key: str = field(
-            default="",
-            metadata={"label": "API Key", "widget": "password"}
+            default="", metadata={"label": "API Key", "widget": "password"}
         )
 
     fields = dataclasses.fields(TestSettings)
@@ -73,8 +71,7 @@ def test_create_checkbox_widget_from_metadata(qt_app):
     @dataclass
     class TestSettings:
         enabled: bool = field(
-            default=False,
-            metadata={"label": "Enabled", "widget": "checkbox"}
+            default=False, metadata={"label": "Enabled", "widget": "checkbox"}
         )
 
     fields = dataclasses.fields(TestSettings)
@@ -99,8 +96,8 @@ def test_create_dropdown_widget_from_metadata(qt_app):
             metadata={
                 "label": "Model",
                 "widget": "dropdown",
-                "options": ["tiny", "base", "large"]
-            }
+                "options": ["tiny", "base", "large"],
+            },
         )
 
     fields = dataclasses.fields(TestSettings)
@@ -130,8 +127,8 @@ def test_create_slider_widget_from_metadata(qt_app):
                 "label": "Timeout",
                 "widget": "slider",
                 "range": [0, 100],
-                "step": 1
-            }
+                "step": 1,
+            },
         )
 
     fields = dataclasses.fields(TestSettings)
@@ -159,8 +156,8 @@ def test_create_action_button_from_metadata(qt_app):
             metadata={
                 "widget": "action_button",
                 "button_text": "Click Me",
-                "on_click": mock_callback
-            }
+                "on_click": mock_callback,
+            },
         )
 
     fields = dataclasses.fields(TestSettings)
@@ -197,11 +194,7 @@ def test_readonly_text_widget(qt_app):
     class TestSettings:
         path: str = field(
             default="/path/to/model",
-            metadata={
-                "label": "Model Path",
-                "widget": "text",
-                "readonly": True
-            }
+            metadata={"label": "Model Path", "widget": "text", "readonly": True},
         )
 
     fields = dataclasses.fields(TestSettings)

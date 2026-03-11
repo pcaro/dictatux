@@ -10,14 +10,11 @@ ABOUTME: Contains Advanced settings dialog with PulseAudio device selection
 from __future__ import annotations
 
 import logging
-import os
-import urllib.error
 import warnings
-from pathlib import Path
-from typing import Dict, List, Optional, Tuple, Callable
+from typing import Dict, List, Optional, Callable
 
-from PySide6.QtCore import QDir, Qt
-from PySide6.QtGui import QPixmap, QIcon
+from PySide6.QtCore import Qt
+from PySide6.QtGui import QPixmap
 from PySide6.QtWidgets import (
     QDialog,
     QKeySequenceEdit,
@@ -26,11 +23,27 @@ from PySide6.QtWidgets import (
     QPushButton,
     QWidget,
     QHBoxLayout,
-    QComboBox,
     QVBoxLayout,
-    QFormLayout,
     QDialogButtonBox,
 )
+
+import dictatux.advanced as advanced  # type: ignore
+
+from dictatux.ui_generator import (
+    generate_settings_tab,
+    read_settings_from_tab,
+    format_tooltip,
+)
+from dictatux.engine_plugin import (
+    get_all_engine_ids,
+    get_engine_settings_class,
+    get_engine_display_name,
+)
+from dictatux.model_ui.dialogs import launch_model_selection_dialog
+from dictatux.audio_recorder import get_audio_devices
+
+from dictatux.settings import Settings
+from dictatux.utils import get_icon
 
 
 class AboutDialog(QDialog):
@@ -45,9 +58,7 @@ class AboutDialog(QDialog):
         logo_label = QLabel()
         logo_pixmap = QPixmap(":/icons/dictatux/scalable/dictatux.svg")
         logo_label.setPixmap(
-            logo_pixmap.scaled(
-                128, 128, Qt.KeepAspectRatio, Qt.SmoothTransformation
-            )
+            logo_pixmap.scaled(128, 128, Qt.KeepAspectRatio, Qt.SmoothTransformation)
         )
         logo_label.setAlignment(Qt.AlignCenter)
         layout.addWidget(logo_label)
@@ -85,24 +96,6 @@ class AboutDialog(QDialog):
         button_box = QDialogButtonBox(QDialogButtonBox.StandardButton.Ok)
         button_box.accepted.connect(self.accept)
         layout.addWidget(button_box)
-
-import dictatux.advanced as advanced  # type: ignore
-
-from dictatux.ui_generator import (
-    generate_settings_tab,
-    read_settings_from_tab,
-    format_tooltip,
-)
-from dictatux.engine_plugin import (
-    get_all_engine_ids,
-    get_engine_settings_class,
-    get_engine_display_name,
-)
-from dictatux.model_ui.dialogs import launch_model_selection_dialog
-from dictatux.audio_recorder import get_audio_devices
-
-from dictatux.settings import Settings
-from dictatux.utils import get_icon
 
 
 class AdvancedUI(QDialog):

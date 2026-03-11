@@ -45,4 +45,3 @@ This document tracks potential improvements and features to implement in Dictatu
 - [ ] Set up CI/CD pipeline
 - [ ] Improve error handling and logging
 - [ ] Code coverage analysis
-
