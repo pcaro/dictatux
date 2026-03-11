@@ -1,0 +1,50 @@
+name: Pytest CI
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Install system dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y \
+          libegl1 \
+          libgl1 \
+          libxkbcommon-x11-0 \
+          libdbus-1-3 \
+          libxcb-cursor0 \
+          libxcb-icccm4 \
+          libxcb-image0 \
+          libxcb-keysyms1 \
+          libxcb-randr0 \
+          libxcb-render-util0 \
+          libxcb-shape0 \
+          libxcb-xfixes0 \
+          libxcb-xinerama0 \
+          libasound2-dev \
+          libportaudio2 \
+          libportaudiocpp0 \
+          portaudio19-dev
+
+    - name: Set up uv
+      uses: astral-sh/setup-uv@v5
+      with:
+        enable-cache: true
+
+    - name: Install dependencies
+      run: |
+        uv sync --dev --extra local_stt --extra whisper_local
+
+    - name: Run tests
+      run: |
+        export QT_QPA_PLATFORM=offscreen
+        uv run pytest
