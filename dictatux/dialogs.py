@@ -2,7 +2,6 @@
 # -*- coding: utf-8 -*-
 """
 @author: Pablo Caro
-@co-author: papoteur
 
 ABOUTME: Dialog windows for Dictatux including model management and configuration
 ABOUTME: Contains Advanced settings dialog with PulseAudio device selection
@@ -18,6 +17,7 @@ from pathlib import Path
 from typing import Dict, List, Optional, Tuple, Callable
 
 from PySide6.QtCore import QDir, Qt
+from PySide6.QtGui import QPixmap, QIcon
 from PySide6.QtWidgets import (
     QDialog,
     QKeySequenceEdit,
@@ -29,7 +29,62 @@ from PySide6.QtWidgets import (
     QComboBox,
     QVBoxLayout,
     QFormLayout,
+    QDialogButtonBox,
 )
+
+
+class AboutDialog(QDialog):
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self.setWindowTitle(self.tr("About Dictatux"))
+        self.setFixedSize(400, 350)
+
+        layout = QVBoxLayout(self)
+
+        # Logo
+        logo_label = QLabel()
+        logo_pixmap = QPixmap(":/icons/dictatux/scalable/dictatux.svg")
+        logo_label.setPixmap(
+            logo_pixmap.scaled(
+                128, 128, Qt.KeepAspectRatio, Qt.SmoothTransformation
+            )
+        )
+        logo_label.setAlignment(Qt.AlignCenter)
+        layout.addWidget(logo_label)
+
+        # App Name and Version
+        from importlib.metadata import version
+
+        try:
+            v = version("Dictatux")
+        except Exception:
+            v = "0.0.1"
+
+        name_label = QLabel(f"<h2>Dictatux v{v}</h2>")
+        name_label.setAlignment(Qt.AlignCenter)
+        layout.addWidget(name_label)
+
+        # Description
+        desc_label = QLabel(
+            self.tr("Multi-engine voice recognition utility for Linux.")
+        )
+        desc_label.setAlignment(Qt.AlignCenter)
+        layout.addWidget(desc_label)
+
+        # License
+        license_label = QLabel(self.tr("License: GPL v3.0"))
+        license_label.setAlignment(Qt.AlignCenter)
+        layout.addWidget(license_label)
+
+        # Authors
+        authors_label = QLabel(self.tr("Author: Pablo Caro (pcaro)"))
+        authors_label.setAlignment(Qt.AlignCenter)
+        layout.addWidget(authors_label)
+
+        # Close button
+        button_box = QDialogButtonBox(QDialogButtonBox.StandardButton.Ok)
+        button_box.accepted.connect(self.accept)
+        layout.addWidget(button_box)
 
 import dictatux.advanced as advanced  # type: ignore
 
@@ -59,8 +114,15 @@ class AdvancedUI(QDialog):
         super().__init__()
         self.ui = advanced.Ui_Dialog()
         self.ui.setupUi(self)
+
+        # Add About button to buttonBox
+        self.about_button = self.ui.buttonBox.addButton(
+            self.tr("About"), QDialogButtonBox.ButtonRole.HelpRole
+        )
+        self.about_button.clicked.connect(self.show_about)
+
         self.setWindowIcon(
-            get_icon("audio-input-microphone", ":/icons/dictatux/24/micro.png")
+            get_icon("dictatux", ":/icons/dictatux/scalable/dictatux.svg")
         )
         self._settings_ref = settings
         self._reset_context_callback = reset_context_callback
@@ -92,6 +154,10 @@ class AdvancedUI(QDialog):
             self._on_language_changed
         )
         self.language_changed_callback = None
+
+    def show_about(self) -> None:
+        """Show the About dialog."""
+        AboutDialog(self).exec()
 
     def _on_language_changed(self, index: int) -> None:
         lang = self.ui.interface_language_cb.itemData(index)

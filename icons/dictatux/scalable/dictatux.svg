@@ -1,0 +1,194 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+    <defs>
+        <!-- Background Gradient -->
+        <radialGradient id="bgGrad" cx="50%" cy="50%" r="60%">
+            <stop offset="0%" stop-color="#1B4332" stop-opacity="0.6"/>
+            <stop offset="60%" stop-color="#0B120E" stop-opacity="1"/>
+            <stop offset="100%" stop-color="#0B120E" stop-opacity="1"/>
+        </radialGradient>
+
+        code
+        Code
+        download
+        content_copy
+        expand_less
+        <!-- Magical Cyan Aura -->
+        <radialGradient id="cyanGlow" cx="50%" cy="50%" r="50%">
+            <stop offset="0%" stop-color="#00F5D4" stop-opacity="0.3"/>
+            <stop offset="100%" stop-color="#00F5D4" stop-opacity="0"/>
+        </radialGradient>
+
+        <!-- Magic Ribbon Gradient (Cyan to Purple) -->
+        <linearGradient id="magicStream" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stop-color="#00F5D4" />
+            <stop offset="100%" stop-color="#9D4EDD" />
+        </linearGradient>
+
+        <!-- Glow Filter -->
+        <filter id="glow" x="-50%" y="-50%" width="200%" height="200%">
+            <feGaussianBlur stdDeviation="4" result="blur" />
+            <feMerge>
+                <feMergeNode in="blur" />
+                <feMergeNode in="SourceGraphic" />
+            </feMerge>
+        </filter>
+    </defs>
+
+    <!-- App Icon Base Background -->
+
+    <rect width="512" height="512" rx="112" fill="#0B120E" />
+    <rect width="512" height="512" rx="112" fill="url(#bgGrad)" />
+
+    <!-- Mystical Floor Shadow -->
+
+    <ellipse cx="256" cy="450" rx="150" ry="15" fill="#050806" />
+    <ellipse cx="382" cy="450" rx="25" ry="5" fill="#050806" />
+
+    <!-- Outer Druid Cowl / Robes -->
+
+    <path d="M 256,40 C 230,60 210,90 200,120 C 160,130 110,170 100,240 C 90,310 100,380 90,450 L 422,450 C 412,380 422,310 412,240 C 402,170 352,130 312,120 C 302,90 282,60 256,40 Z" fill="#153326" />
+
+    <!-- Deep Inner Robe Shadow (Housing Tux) -->
+
+    <path d="M 256,90 C 200,120 170,180 170,250 C 170,320 200,380 256,430 C 312,380 342,320 342,250 C 342,180 312,120 256,90 Z" fill="#0A1410" />
+
+    <!-- TUX PENGUIN BASE -->
+
+    <!-- Feet -->
+
+    <path d="M 235,420 C 210,420 190,435 190,445 C 190,450 245,450 250,430 Z" fill="#FF9F1C" />
+    <path d="M 277,420 C 302,420 322,435 322,445 C 322,450 267,450 262,430 Z" fill="#FF9F1C" />
+
+    <!-- Body -->
+
+    <ellipse cx="256" cy="310" rx="60" ry="75" fill="#181D20" />
+    <ellipse cx="256" cy="320" rx="45" ry="60" fill="#EAEAEA" />
+
+    <!-- Head -->
+
+    <ellipse cx="256" cy="190" rx="45" ry="45" fill="#181D20" />
+
+    <!-- Face Mask -->
+
+    <path d="M 256,195 C 215,195 210,175 210,160 C 210,145 230,140 256,150 C 282,140 302,145 302,160 C 302,175 297,195 256,195 Z" fill="#EAEAEA" />
+
+    <!-- Beak -->
+
+    <path d="M 240,185 Q 256,170 272,185 Q 256,220 240,185 Z" fill="#FFCA3A" />
+
+    <!-- Eyes (Glowing Cyan) -->
+
+    <ellipse cx="238" cy="165" rx="5" ry="8" fill="#00F5D4" filter="url(#glow)" />
+    <ellipse cx="274" cy="165" rx="5" ry="8" fill="#00F5D4" filter="url(#glow)" />
+
+    <!-- Angry / Mystical Druid Brows -->
+
+    <path d="M 225,155 Q 240,152 250,162" fill="none" stroke="#181D20" stroke-width="3" stroke-linecap="round" />
+    <path d="M 287,155 Q 272,152 262,162" fill="none" stroke="#181D20" stroke-width="3" stroke-linecap="round" />
+
+    <!-- Robe Opening Trim (Magical Cyan Glow) -->
+
+    <path d="M 256,90 C 200,120 170,180 170,250 C 170,320 200,380 256,430 C 312,380 342,320 342,250 C 342,180 312,120 256,90 Z" fill="none" stroke="#00F5D4" stroke-width="3" opacity="0.8" />
+
+    <!-- Secondary Dashed Trim for mystical runes effect -->
+
+    <path d="M 256,98 C 206,126 178,183 178,250 C 178,317 206,374 256,422 C 306,374 334,317 334,250 C 334,183 306,126 256,98 Z" fill="none" stroke="#00F5D4" stroke-width="1.5" stroke-dasharray="8 6" opacity="0.5" />
+
+    <!-- MICROPHONE STAFF (Right Side) -->
+
+    <!-- Ambient Mic Glow -->
+
+    <circle cx="382" cy="75" r="80" fill="url(#cyanGlow)" />
+
+    <!-- Staff Pole -->
+
+    <rect x="376" y="140" width="12" height="310" rx="6" fill="#2E241E" />
+    <line x1="379" y1="145" x2="379" y2="445" stroke="#403229" stroke-width="2" />
+
+    <!-- Leather Straps -->
+
+    <path d="M 376,260 L 388,270 L 388,280 L 376,270 Z" fill="#523B2D" />
+    <path d="M 376,275 L 388,285 L 388,295 L 376,285 Z" fill="#523B2D" />
+    <path d="M 376,290 L 388,300 L 388,310 L 376,300 Z" fill="#523B2D" />
+
+    <!-- Staff Magic Binding Spiral -->
+
+    <path d="M 365,250 C 350,230 400,210 390,190 C 380,170 350,150 365,130" fill="none" stroke="#00F5D4" stroke-width="2" stroke-dasharray="4 4" opacity="0.8" />
+
+    <!-- Mic Mount Base -->
+
+    <path d="M 382,140 L 382,120" stroke="#707A82" stroke-width="6" />
+    <path d="M 360,95 C 360,130 404,130 404,95" fill="none" stroke="#707A82" stroke-width="6" stroke-linecap="round" />
+    <circle cx="360" cy="95" r="4" fill="#A0AAB2" />
+    <circle cx="404" cy="95" r="4" fill="#A0AAB2" />
+
+    <!-- Vintage Mic Pill -->
+
+    <rect x="364" y="45" width="36" height="60" rx="18" fill="#181D20" stroke="#707A82" stroke-width="4" />
+    <line x1="382" y1="45" x2="382" y2="105" stroke="#707A82" stroke-width="4" />
+    <line x1="364" y1="65" x2="400" y2="65" stroke="#707A82" stroke-width="4" />
+    <line x1="364" y1="85" x2="400" y2="85" stroke="#707A82" stroke-width="4" />
+
+    <!-- Glowing Mic Crystal / Source -->
+
+    <rect x="368" y="49" width="12" height="12" rx="6" fill="#00F5D4" filter="url(#glow)" />
+    <rect x="384" y="49" width="12" height="12" rx="6" fill="#00F5D4" filter="url(#glow)" />
+
+    <!-- Right Sleeve (Emerging from robe) -->
+
+    <path d="M 330,240 C 370,260 410,300 420,330 L 360,350 C 350,320 330,280 310,260 Z" fill="#1B4332" />
+    <path d="M 420,330 L 360,350" stroke="#00F5D4" stroke-width="2" opacity="0.5" />
+
+    <!-- Right Flipper (Holding Staff) -->
+
+    <path d="M 360,325 C 380,315 400,315 400,335 C 400,355 380,355 360,345 Z" fill="#181D20" />
+
+    <!-- SPELL MAGIC & SOUNDWAVES -->
+
+    <!-- Ambient Voice Soundwaves near Beak -->
+
+    <path d="M 285,185 A 20,20 0 0,1 285,215" fill="none" stroke="#00F5D4" stroke-width="2" stroke-linecap="round" filter="url(#glow)" />
+    <path d="M 295,175 A 35,35 0 0,1 295,225" fill="none" stroke="#00F5D4" stroke-width="2" stroke-linecap="round" opacity="0.6" />
+
+    <!-- Magical Data Stream Ribbon 1 (Cyan Runic Code) -->
+
+    <path d="M 382,75 C 300,-20 150,80 160,140" fill="none" stroke="#00F5D4" stroke-width="4" stroke-linecap="round" stroke-dasharray="1 10 20 10 5 10 30 10" filter="url(#glow)" />
+
+    <!-- Magical Data Stream Ribbon 2 (Purple Flowing Waves) -->
+
+    <path d="M 382,75 C 500,150 480,250 445,285" fill="none" stroke="#9D4EDD" stroke-width="5" stroke-linecap="round" stroke-dasharray="2 15 10 15 25 15 8 15" filter="url(#glow)" />
+
+    <!-- Magical Data Stream Ribbon 3 (Smooth Wave Base) -->
+
+    <path d="M 382,75 C 280,100 320,250 420,300 C 500,340 380,480 256,480 C 100,480 30,300 135,185" fill="none" stroke="url(#magicStream)" stroke-width="2" opacity="0.4" />
+
+    <!-- FLOATING DICTATION SPEECH BUBBLES -->
+
+    <!-- Bubble 1 (Cyan Runic Dictation) -->
+
+    <path d="M 100,160 a 20,20 0 0,1 20,-20 h 40 a 20,20 0 0,1 20,20 v 20 a 20,20 0 0,1 -20,20 h -10 l -15,15 v -15 h -15 a 20,20 0 0,1 -20,-20 z" fill="#153326" stroke="#00F5D4" stroke-width="3" />
+    <!-- Runic Text Inside Bubble 1 -->
+    <circle cx="125" cy="170" r="3" fill="#00F5D4" />
+    <line x1="135" y1="170" x2="160" y2="170" stroke="#00F5D4" stroke-width="4" stroke-linecap="round" />
+    <line x1="120" y1="185" x2="145" y2="185" stroke="#00F5D4" stroke-width="4" stroke-linecap="round" />
+    <circle cx="155" cy="185" r="3" fill="#00F5D4" />
+
+    <!-- Bubble 2 (Purple Glowing Words) -->
+
+    <path d="M 400,300 a 15,15 0 0,1 15,-15 h 30 a 15,15 0 0,1 15,15 v 15 a 15,15 0 0,1 -15,15 h -10 l -10,10 v -10 h -10 a 15,15 0 0,1 -15,-15 z" fill="#1A1525" stroke="#9D4EDD" stroke-width="3" />
+    <!-- Runic Text Inside Bubble 2 -->
+    <line x1="415" y1="300" x2="445" y2="300" stroke="#9D4EDD" stroke-width="3" stroke-linecap="round" />
+    <line x1="415" y1="312" x2="435" y2="312" stroke="#9D4EDD" stroke-width="3" stroke-linecap="round" />
+
+    <!-- Floating Sparkles / Ambient Magic Particles -->
+
+    <circle cx="280" cy="80" r="2.5" fill="#00F5D4" filter="url(#glow)" />
+    <circle cx="320" cy="100" r="3" fill="#9D4EDD" />
+    <circle cx="180" cy="120" r="1.5" fill="#00F5D4" />
+    <circle cx="470" cy="200" r="2.5" fill="#9D4EDD" filter="url(#glow)" />
+    <circle cx="380" cy="230" r="2" fill="#00F5D4" />
+    <circle cx="130" cy="280" r="3" fill="#00F5D4" filter="url(#glow)" />
+    <circle cx="310" cy="400" r="2" fill="#9D4EDD" />
+    <circle cx="200" cy="450" r="2.5" fill="#00F5D4" filter="url(#glow)" />
+
+</svg>

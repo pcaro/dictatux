@@ -81,6 +81,7 @@ class SystemTrayIcon(QSystemTrayIcon):
         self.toggleAction.setEnabled(True)
         self.stopAction.setEnabled(False)
         self.configAction = menu.addAction(self.tr("Configuration"))
+        self.aboutAction = menu.addAction(self.tr("About"))
         self.exitAction = menu.addAction(self.tr("Exit"))
         self.setContextMenu(menu)
 
@@ -93,6 +94,7 @@ class SystemTrayIcon(QSystemTrayIcon):
         )
         self.exitAction.triggered.connect(self.exit)
         self.configAction.triggered.connect(self.config)
+        self.aboutAction.triggered.connect(self.about)
         self.nomicro = get_icon(
             "microphone-sensitivity-muted", ":/icons/dictatux/24/nomicro.png"
         )
@@ -146,6 +148,7 @@ class SystemTrayIcon(QSystemTrayIcon):
         """Update texts of tray menu items after language change."""
         self.stopAction.setText(self.tr("Stop dictation"))
         self.configAction.setText(self.tr("Configuration"))
+        self.aboutAction.setText(self.tr("About"))
         self.exitAction.setText(self.tr("Exit"))
         if self.suspended:
             self.toggleAction.setText(self.tr("Resume dictation"))
@@ -153,6 +156,12 @@ class SystemTrayIcon(QSystemTrayIcon):
             self.toggleAction.setText(self.tr("Suspend dictation"))
         else:
             self.toggleAction.setText(self.tr("Start dictation"))
+
+    def about(self) -> None:
+        """Show the About dialog."""
+        from dictatux.dialogs import AboutDialog
+
+        AboutDialog().exec()
 
     def _apply_state(
         self, icon_state: IconState, dictating: bool, suspended: bool

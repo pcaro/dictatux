@@ -5,5 +5,6 @@
         <file>../icons/dictatux/24/nomicro.png</file>
         <file>../icons/dictatux/scalable/micro.svg</file>
         <file>../icons/dictatux/scalable/nomicro.svg</file>
+        <file>../icons/dictatux/scalable/dictatux.svg</file>
     </qresource>
 </RCC>
