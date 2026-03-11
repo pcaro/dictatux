@@ -3,7 +3,7 @@
 """
 Created on Wed Jun 16 08:15:47 2021
 
-@author: Pablo Caro
+@author: Pablo Caro (pcaro)
 @co-author: papoteur
 @license: GPL v3.0
 """
@@ -269,6 +269,9 @@ def setup_application(app: QApplication) -> None:
     app.setDesktopFileName("Dictatux")
     # don't close application when closing setting window
     app.setQuitOnLastWindowClosed(False)
+    app.setWindowIcon(
+        get_icon("dictatux", ":/icons/dictatux/scalable/dictatux.svg")
+    )
 
     settings = Settings()
     settings.load()

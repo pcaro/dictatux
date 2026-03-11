@@ -84,6 +84,18 @@ dictatux = "dictatux.dictatux:main"
 [tool.setuptools]
 packages = ["dictatux", "dictatux.translations"]
 
+[tool.setuptools.package-data]
+"*" = ["translations/*.qm"]
+
+[tool.setuptools.data-files]
+"share/icons/hicolor/scalable/apps/" = [
+    "icons/dictatux/scalable/micro.svg",
+    "icons/dictatux/scalable/nomicro.svg",
+    "icons/dictatux/scalable/dictatux.svg",
+]
+"share/doc/dictatux/" = ["README.md", "LICENSE"]
+"share/applications/" = ["dictatux.desktop"]
+
 [dependency-groups]
 dev = [
     "pytest>=7.4.4",

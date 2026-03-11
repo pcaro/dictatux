@@ -1,5 +1,9 @@
 # Dictatux
 
+<p align="center">
+  <img src="icons/dictatux/scalable/dictatux.svg" width="256" alt="Dictatux Logo">
+</p>
+
 **Multi-engine voice recognition utility**
 
 Dictatux is a desktop application that provides a graphical interface for multiple speech-to-text engines. It supports multiple STT backends including Whisper (Local), Whisper Docker, Google Cloud Speech, and OpenAI Realtime API. It runs in your system tray and offers easy control over dictation through an intuitive icon and menu system.
@@ -270,7 +274,7 @@ GPL-3.0 License - See LICENSE file for details
 ## Authors
 
 - **Pablo Caro** - Author
-- **papoteur** - Original author
+- **papoteur** - Idea original. Elograf is a desktop application that provides a graphical interface for launching and configuring nerd-dictation 
 
 ---
 
@@ -278,3 +282,4 @@ GPL-3.0 License - See LICENSE file for details
 
 - [GitHub Repository](https://github.com/pcaro/dictatux)
 - [Vosk Models (alphacei)](https://alphacephei.com/vosk/models)
+- [Elograf (papoteur-mga)](https://github.com/papoteur-mga/elograf/)
