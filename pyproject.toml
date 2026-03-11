@@ -76,7 +76,7 @@ all = [
 ]
 
 [project.urls]
-Homepage = "https://github.com/pcaro/dictatux/"
+Homepage = "https://github/dictatux.com/pcaro/"
 
 [project.scripts]
 dictatux = "dictatux.dictatux:main"
@@ -96,9 +96,16 @@ packages = ["dictatux", "dictatux.translations"]
 "share/doc/dictatux/" = ["README.md", "LICENSE"]
 "share/applications/" = ["dictatux.desktop"]
 
+[tool.pytest.ini_options]
+markers = [
+    "slow: marks tests as slow",
+]
+
 [dependency-groups]
 dev = [
     "pytest>=7.4.4",
     "pytest-qt>=4.2.0",
     "numpy",
+    "jiwer>=3.0",
+    "gtts>=2.5.4",
 ]

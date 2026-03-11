@@ -357,3 +357,26 @@ class FakeIPC:
 
     def cleanup(self) -> None:
         self.cleanup_called = True
+
+
+def normalize_text(text: str) -> str:
+    """Normalize text for WER calculation."""
+    import re
+    # Lowercase and remove punctuation
+    text = text.lower()
+    text = re.sub(r'[^\w\s]', '', text)
+    # Remove extra whitespace
+    text = re.sub(r'\s+', ' ', text).strip()
+    return text
+
+def calculate_wer(reference: str, hypothesis: str) -> float:
+    """Calculate Word Error Rate using jiwer."""
+    import jiwer
+    ref_norm = normalize_text(reference)
+    hyp_norm = normalize_text(hypothesis)
+    if not ref_norm and not hyp_norm:
+        return 0.0
+    if not ref_norm:
+        return 1.0
+    return jiwer.wer(ref_norm, hyp_norm)
+
