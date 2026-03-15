@@ -54,7 +54,9 @@ def test_download_model_archive_returns_path():
         return "/tmp/archive.zip", {}
 
     # Use allowed domain URL
-    path = repo.download_model_archive("https://alphacephei.com/model.zip", fetcher=fake_fetch)
+    path = repo.download_model_archive(
+        "https://alphacephei.com/model.zip", fetcher=fake_fetch
+    )
     assert path == "/tmp/archive.zip"
 
 
@@ -68,7 +70,9 @@ def test_download_model_archive_rejects_invalid_urls():
 
     # Subdomain attack should also be rejected
     with pytest.raises(ValueError, match="not from an allowed domain"):
-        repo.download_model_archive("https://alphacephei.com.evil.com/model.zip", fetcher=fake_fetch)
+        repo.download_model_archive(
+            "https://alphacephei.com.evil.com/model.zip", fetcher=fake_fetch
+        )
 
 
 def test_filter_available_models_filters_names():

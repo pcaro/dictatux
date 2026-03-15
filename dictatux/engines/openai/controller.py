@@ -13,7 +13,10 @@ from typing import Callable, Dict, List, Optional
 from dictatux.base_controller import StreamingControllerBase
 from dictatux.status import DictationStatus
 from dictatux.input_simulator import type_text
-from dictatux.streaming_runner_base import StreamingRunnerBase, extract_raw_audio_from_wav
+from dictatux.streaming_runner_base import (
+    StreamingRunnerBase,
+    extract_raw_audio_from_wav,
+)
 from dictatux.partial_handler import PartialTextHandler
 from .settings import OpenAISettings
 
