@@ -9,7 +9,7 @@ import logging
 import shutil
 import sys
 from abc import ABC, abstractmethod
-from subprocess import PIPE, Popen, run
+from subprocess import DEVNULL, PIPE, Popen, run
 from typing import List, Optional, Tuple
 
 import wave
@@ -301,7 +301,7 @@ class ParecBackend(AudioBackend):
         """Start parec subprocess."""
         command = self._build_command()
         try:
-            self._parec = Popen(command, stdout=PIPE, stderr=PIPE)
+            self._parec = Popen(command, stdout=PIPE, stderr=DEVNULL)
         except OSError as exc:
             raise RuntimeError(f"Failed to start parec: {exc}") from exc
 

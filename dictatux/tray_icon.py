@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import logging
+import shlex
 from subprocess import Popen
 from typing import Optional, Tuple
 
@@ -226,7 +227,7 @@ class SystemTrayIcon(QSystemTrayIcon):
 
         if hasattr(self.settings, "postcommand") and self.settings.postcommand:
             try:
-                Popen(self.settings.postcommand.split())
+                Popen(shlex.split(self.settings.postcommand))
             except Exception as exc:
                 logging.error("Failed to run postcommand: %s", exc)
 
@@ -354,7 +355,7 @@ class SystemTrayIcon(QSystemTrayIcon):
             return
         logging.debug(f"Start dictation with model {model} located in {location}")
         if self.settings.precommand:
-            parts = self.settings.precommand.split()
+            parts = shlex.split(self.settings.precommand)
             if parts:
                 Popen(parts)
         self._postcommand_ran = False

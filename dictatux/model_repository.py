@@ -1,7 +1,9 @@
 from __future__ import annotations
 
+import logging
 import os
 import urllib.request
+import urllib.parse
 from pathlib import Path
 from typing import Callable, Iterable, List, Tuple
 
@@ -11,6 +13,43 @@ MODEL_USER_PATH = Path.home() / ".config/vosk-models"
 MODEL_GLOBAL_PATH = Path("/usr/share/vosk-models")
 MODEL_LIST = "model-list.json"
 MODELS_URL = "https://alphacephei.com/vosk/models"
+
+# Allowed domains for model downloads (security measure)
+ALLOWED_MODEL_DOMAINS = {"alphacephei.com"}
+
+
+def validate_model_url(url: str) -> bool:
+    """Validate that a URL is from an allowed domain for model downloads.
+
+    Args:
+        url: The URL to validate
+
+    Returns:
+        True if the URL is from an allowed domain, False otherwise
+    """
+    try:
+        parsed = urllib.parse.urlparse(url)
+        netloc = parsed.netloc.lower()
+
+        # Remove port number if present
+        if ":" in netloc:
+            netloc = netloc.split(":")[0]
+
+        # Check if the domain ends with any allowed domain
+        for allowed in ALLOWED_MODEL_DOMAINS:
+            if netloc == allowed or netloc.endswith("." + allowed):
+                return True
+
+        logging.warning(
+            "Model download rejected: URL '%s' is not from an allowed domain. "
+            "Allowed domains: %s",
+            url,
+            list(ALLOWED_MODEL_DOMAINS),
+        )
+        return False
+    except Exception as exc:
+        logging.warning("Failed to parse model URL '%s': %s", url, exc)
+        return False
 
 
 def get_size(start_path: os.PathLike[str] | str = ".") -> Tuple[float, str]:
@@ -67,6 +106,12 @@ def download_model_archive(
     fetcher: Fetcher = urllib.request.urlretrieve,
     reporthook: Callable[[int, int, int], None] | None = None,
 ) -> str:
+    # Validate URL before downloading (security measure)
+    if not validate_model_url(url):
+        raise ValueError(
+            f"Model download rejected: URL '{url}' is not from an allowed domain. "
+            f"Allowed domains: {list(ALLOWED_MODEL_DOMAINS)}"
+        )
     local_path, _ = fetcher(url, None, reporthook)
     return local_path
 

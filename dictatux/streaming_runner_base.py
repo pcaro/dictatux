@@ -2,14 +2,75 @@
 
 from __future__ import annotations
 
+import io
 import logging
 import threading
 import time
+import wave
 from abc import ABC, abstractmethod
 from typing import Callable, Optional, Sequence
 
 from dictatux.audio_recorder import AudioRecorder
 from dictatux.stt_engine import STTProcessRunner
+
+
+def extract_raw_audio_from_wav(wav_data: bytes) -> bytes:
+    """Extract raw PCM audio from WAV data, properly parsing the header.
+
+    Args:
+        wav_data: WAV-formatted audio data
+
+    Returns:
+        Raw PCM audio bytes (without WAV header)
+
+    Note:
+        This properly parses the WAV header instead of assuming a fixed
+        44-byte header size, which may vary with different WAV files.
+    """
+    if len(wav_data) < 12:
+        # Not enough data for WAV header
+        return wav_data
+
+    # Check for RIFF header
+    if wav_data[:4] != b"RIFF":
+        logging.warning("Invalid WAV data: missing RIFF header")
+        return wav_data[44:] if len(wav_data) > 44 else wav_data
+
+    if wav_data[8:12] != b"WAVE":
+        logging.warning("Invalid WAV data: missing WAVE format")
+        return wav_data[44:] if len(wav_data) > 44 else wav_data
+
+    try:
+        wav_buffer = io.BytesIO(wav_data)
+        with wave.open(wav_buffer, "rb") as wav_file:
+            # After opening, tell() gives us the position after reading
+            # the WAV header parameters (channels, sample_width, framerate)
+            # But the actual data starts after the 'data' chunk header
+            params_size = wav_file.tell()
+
+            # Scan for 'data' chunk in the WAV file
+            # Standard WAV: RIFF header(12) + fmt chunk(24+) + data chunk(8+) + audio data
+            # Find 'data' marker in the header area
+            search_limit = min(1024, len(wav_data))
+            for i in range(params_size, search_limit - 8):
+                if wav_data[i : i + 4] == b"data":
+                    # Found data chunk - audio starts after 8-byte chunk header
+                    data_start = i + 8
+                    data_size = (
+                        wav_file.getnframes()
+                        * wav_file.getsampwidth()
+                        * wav_file.getnchannels()
+                    )
+                    return wav_data[data_start : data_start + data_size]
+
+            # Fallback: assume standard 44-byte header for typical PCM WAV
+            logging.debug("Could not locate data chunk, using standard 44-byte offset")
+            return wav_data[44:] if len(wav_data) > 44 else wav_data
+    except Exception as exc:
+        logging.warning(
+            f"Failed to parse WAV header: {exc}, falling back to 44-byte offset"
+        )
+        return wav_data[44:] if len(wav_data) > 44 else wav_data
 
 
 class StreamingRunnerBase(STTProcessRunner, ABC):
@@ -180,8 +241,8 @@ class StreamingRunnerBase(STTProcessRunner, ABC):
         self._audio_detection_logged = True
 
         try:
-            # Extract raw PCM audio from WAV (skip 44-byte header)
-            raw_audio = audio_chunk[44:] if len(audio_chunk) > 44 else audio_chunk
+            # Extract raw PCM audio from WAV using proper parser
+            raw_audio = extract_raw_audio_from_wav(audio_chunk)
 
             # Calculate RMS (root mean square) audio level
             import struct

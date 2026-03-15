@@ -16,7 +16,15 @@ DEFAULT_RATE: int = 44100
 
 
 class Settings:
-    """Wrapper around QSettings storing Dictatux preferences and models."""
+    """Wrapper around QSettings storing Dictatux preferences and models.
+
+    Security Note: This class stores sensitive credentials (API keys) in QSettings.
+    QSettings stores data in the user's config directory with filesystem permissions.
+    For enhanced security, consider:
+    - Using system keyring (e.g., keyring Python package) for API keys
+    - Never logging API key values
+    - Restricting filesystem permissions on the config directory
+    """
 
     def __init__(self, backend: Optional[QSettings] = None) -> None:
         if backend is None:

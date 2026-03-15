@@ -13,7 +13,10 @@ from typing import Callable, Dict, List, Optional
 from dictatux.base_controller import StreamingControllerBase
 from dictatux.status import DictationStatus
 from dictatux.input_simulator import type_text
-from dictatux.streaming_runner_base import StreamingRunnerBase
+from dictatux.streaming_runner_base import (
+    StreamingRunnerBase,
+    extract_raw_audio_from_wav,
+)
 from dictatux.partial_handler import PartialTextHandler
 from .settings import OpenAISettings
 
@@ -450,5 +453,5 @@ class OpenAIRealtimeProcessRunner(StreamingRunnerBase):
             self._failure_exit = True
 
     def _extract_raw_audio(self, wav_data: bytes) -> bytes:
-        """Extract raw PCM audio from WAV file (skip 44-byte header)."""
-        return wav_data[44:]
+        """Extract raw PCM audio from WAV file using proper header parsing."""
+        return extract_raw_audio_from_wav(wav_data)
