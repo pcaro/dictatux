@@ -2,14 +2,59 @@
 
 from __future__ import annotations
 
+import io
 import logging
 import threading
 import time
+import wave
 from abc import ABC, abstractmethod
 from typing import Callable, Optional, Sequence
 
 from dictatux.audio_recorder import AudioRecorder
 from dictatux.stt_engine import STTProcessRunner
+
+
+def extract_raw_audio_from_wav(wav_data: bytes) -> bytes:
+    """Extract raw PCM audio from WAV data, properly parsing the header.
+
+    Args:
+        wav_data: WAV-formatted audio data
+
+    Returns:
+        Raw PCM audio bytes (without WAV header)
+
+    Note:
+        This properly parses the WAV header instead of assuming a fixed
+        44-byte header size, which may vary with different WAV files.
+    """
+    if len(wav_data) < 12:
+        # Not enough data for WAV header
+        return wav_data
+
+    # Check for RIFF header
+    if wav_data[:4] != b'RIFF':
+        logging.warning("Invalid WAV data: missing RIFF header")
+        return wav_data[44:] if len(wav_data) > 44 else wav_data
+
+    if wav_data[8:12] != b'WAVE':
+        logging.warning("Invalid WAV data: missing WAVE format")
+        return wav_data[44:] if len(wav_data) > 44 else wav_data
+
+    try:
+        wav_buffer = io.BytesIO(wav_data)
+        with wave.open(wav_buffer, 'rb') as wav_file:
+            # Get to the end to find the data size
+            wav_file.rewind()
+            # Read all frames - this positions us after the data chunk
+            _ = wav_file.readframes(wav_file.getnframes())
+            # Current position is after audio data
+            data_position = wav_buffer.tell()
+    except Exception as exc:
+        logging.warning(f"Failed to parse WAV header: {exc}, falling back to 44-byte offset")
+        return wav_data[44:] if len(wav_data) > 44 else wav_data
+
+    # Return audio data after header
+    return wav_data[data_position:]
 
 
 class StreamingRunnerBase(STTProcessRunner, ABC):
@@ -180,8 +225,8 @@ class StreamingRunnerBase(STTProcessRunner, ABC):
         self._audio_detection_logged = True
 
         try:
-            # Extract raw PCM audio from WAV (skip 44-byte header)
-            raw_audio = audio_chunk[44:] if len(audio_chunk) > 44 else audio_chunk
+            # Extract raw PCM audio from WAV using proper parser
+            raw_audio = extract_raw_audio_from_wav(audio_chunk)
 
             # Calculate RMS (root mean square) audio level
             import struct
