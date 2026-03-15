@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from pathlib import Path
 
+import pytest
 import ujson
 
 from dictatux import model_repository as repo
@@ -52,8 +53,22 @@ def test_download_model_archive_returns_path():
     def fake_fetch(url, filename, reporthook):
         return "/tmp/archive.zip", {}
 
-    path = repo.download_model_archive("http://example/model.zip", fetcher=fake_fetch)
+    # Use allowed domain URL
+    path = repo.download_model_archive("https://alphacephei.com/model.zip", fetcher=fake_fetch)
     assert path == "/tmp/archive.zip"
+
+
+def test_download_model_archive_rejects_invalid_urls():
+    def fake_fetch(url, filename, reporthook):
+        return "/tmp/archive.zip", {}
+
+    # Invalid domain should raise ValueError
+    with pytest.raises(ValueError, match="not from an allowed domain"):
+        repo.download_model_archive("http://evil.com/model.zip", fetcher=fake_fetch)
+
+    # Subdomain attack should also be rejected
+    with pytest.raises(ValueError, match="not from an allowed domain"):
+        repo.download_model_archive("https://alphacephei.com.evil.com/model.zip", fetcher=fake_fetch)
 
 
 def test_filter_available_models_filters_names():
