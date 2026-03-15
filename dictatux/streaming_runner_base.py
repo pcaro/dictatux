@@ -43,18 +43,28 @@ def extract_raw_audio_from_wav(wav_data: bytes) -> bytes:
     try:
         wav_buffer = io.BytesIO(wav_data)
         with wave.open(wav_buffer, 'rb') as wav_file:
-            # Get to the end to find the data size
-            wav_file.rewind()
-            # Read all frames - this positions us after the data chunk
-            _ = wav_file.readframes(wav_file.getnframes())
-            # Current position is after audio data
-            data_position = wav_buffer.tell()
+            # After opening, tell() gives us the position after reading
+            # the WAV header parameters (channels, sample_width, framerate)
+            # But the actual data starts after the 'data' chunk header
+            params_size = wav_file.tell()
+            
+            # Scan for 'data' chunk in the WAV file
+            # Standard WAV: RIFF header(12) + fmt chunk(24+) + data chunk(8+) + audio data
+            # Find 'data' marker in the header area
+            search_limit = min(1024, len(wav_data))
+            for i in range(params_size, search_limit - 8):
+                if wav_data[i:i+4] == b'data':
+                    # Found data chunk - audio starts after 8-byte chunk header
+                    data_start = i + 8
+                    data_size = wav_file.getnframes() * wav_file.getsampwidth() * wav_file.getnchannels()
+                    return wav_data[data_start:data_start + data_size]
+            
+            # Fallback: assume standard 44-byte header for typical PCM WAV
+            logging.debug("Could not locate data chunk, using standard 44-byte offset")
+            return wav_data[44:] if len(wav_data) > 44 else wav_data
     except Exception as exc:
         logging.warning(f"Failed to parse WAV header: {exc}, falling back to 44-byte offset")
         return wav_data[44:] if len(wav_data) > 44 else wav_data
-
-    # Return audio data after header
-    return wav_data[data_position:]
 
 
 class StreamingRunnerBase(STTProcessRunner, ABC):
